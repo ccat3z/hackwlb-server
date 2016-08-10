@@ -3,20 +3,9 @@ package com.zf3zzzx.utils;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import org.apache.http.Consts;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClients;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
 
 public class HackVote implements Runnable, HackTask{
     private boolean run = false;
@@ -29,9 +18,9 @@ public class HackVote implements Runnable, HackTask{
 
     @Override
     public void initServer(String tag, HttpServer server) {
-        server.createContext("/" + tag + "-start", new StartHandler());
-        server.createContext("/" + tag + "-state", new StateHandler());
-        server.createContext("/" + tag + "-stop", new StopHandler());
+        server.createContext("/" + tag + "/start", new StartHandler());
+        server.createContext("/" + tag + "/state", new StateHandler());
+        server.createContext("/" + tag + "/stop", new StopHandler());
     }
 
     @Override
@@ -92,6 +81,7 @@ public class HackVote implements Runnable, HackTask{
                 }
                 speed = oldtime - time;
             }
+            speedTestThread = null;
             Utils.log("Speed Test Thread Stop");
         }
     }

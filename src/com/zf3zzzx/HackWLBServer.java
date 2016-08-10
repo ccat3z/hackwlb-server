@@ -8,7 +8,6 @@ import java.io.*;
 import java.net.InetSocketAddress;
 
 public class HackWLBServer {
-    private HackWLB hackWLB;
 
     public static void main(String[] args) {
         if (args.length != 2) {
@@ -19,7 +18,6 @@ public class HackWLBServer {
     }
 
     public HackWLBServer(String serv, int port) {
-        hackWLB = new HackWLB();
         InetSocketAddress address = new InetSocketAddress(serv, port);
         try {
             HttpServer server = HttpServer.create(address, 5);

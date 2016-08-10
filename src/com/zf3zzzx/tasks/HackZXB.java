@@ -7,6 +7,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -25,6 +26,9 @@ public class HackZXB extends HackVote{
         } catch (Exception e){
             e.printStackTrace();
         }
+        final int TIMEOUTMS = 15 * 1000;
+        RequestConfig requestConfig = RequestConfig.custom().setConnectionRequestTimeout(TIMEOUTMS).setConnectTimeout(TIMEOUTMS).setSocketTimeout(TIMEOUTMS).build();
+        httpPost.setConfig(requestConfig);
         httpPost.setHeader("X-Forwarded-For",Utils.getRandomIp());
         httpPost.setHeader("Content-type", "application/x-www-form-urlencoded");
         String resp = null;
