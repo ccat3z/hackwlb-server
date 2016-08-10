@@ -16,6 +16,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 
 public class HackVote implements Runnable, HackTask{
     private boolean run = false;
@@ -23,7 +24,8 @@ public class HackVote implements Runnable, HackTask{
     private int time = 0;
     private int state = 0;
     private int speed = 0;
-    private int thread = 0;
+    private Thread speedTestThread;
+    private int thread;
 
     @Override
     public void initServer(String tag, HttpServer server) {
@@ -35,11 +37,10 @@ public class HackVote implements Runnable, HackTask{
     @Override
     public void run() {
         Utils.log("Vote Thread Start");
-        new Thread(new SpeedTest()).start();
         thread++;
         while (run & id != 0 & time != 0){
-            state = voteOnce(id);
             time--;
+            state = voteOnce(id);
         }
         run = false;
         thread--;
@@ -47,14 +48,17 @@ public class HackVote implements Runnable, HackTask{
     }
 
     public void start(){
-        this.run = true;
-        new Thread(this).start();
+        start(id,time);
     }
 
     public void start(int id, int time){
         this.id = id;
         this.time = time;
         this.run = true;
+        if (speedTestThread == null) {
+            speedTestThread = new Thread(new SpeedTest());
+            speedTestThread.start();
+        }
         new Thread(this).start();
     }
 
@@ -78,6 +82,7 @@ public class HackVote implements Runnable, HackTask{
     private class SpeedTest implements Runnable {
         @Override
         public void run() {
+            Utils.log("Speed Test Thread Start");
             while (run){
                 int oldtime = time;
                 try {
@@ -87,6 +92,7 @@ public class HackVote implements Runnable, HackTask{
                 }
                 speed = oldtime - time;
             }
+            Utils.log("Speed Test Thread Stop");
         }
     }
 
