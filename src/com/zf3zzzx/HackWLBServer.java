@@ -23,8 +23,8 @@ public class HackWLBServer {
         InetSocketAddress address = new InetSocketAddress(serv, port);
         try {
             HttpServer server = HttpServer.create(address, 5);
-            new HackWLB().initServer(server);
-            new HackZXB().initServer(server);
+            new HackWLB().initServer("wlb",server);
+            new HackZXB().initServer("zxb",server);
             server.setExecutor(null);
             server.start();
             System.out.println("server started at " + serv + ":" + port);
