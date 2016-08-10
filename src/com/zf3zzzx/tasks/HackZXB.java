@@ -136,6 +136,7 @@ public class HackZXB implements Runnable, HackTask{
             OutputStream os = httpExchange.getResponseBody();
             os.write(resp.getBytes());
             os.flush();
+            os.close();
         }
     }
 
@@ -148,6 +149,7 @@ public class HackZXB implements Runnable, HackTask{
             OutputStream os = httpExchange.getResponseBody();
             os.write(resp.getBytes());
             os.flush();
+            os.close();
         }
     }
 
@@ -161,6 +163,7 @@ public class HackZXB implements Runnable, HackTask{
             OutputStream os = httpExchange.getResponseBody();
             os.write(resp.getBytes());
             os.flush();
+            os.close();
         }
     }
 }

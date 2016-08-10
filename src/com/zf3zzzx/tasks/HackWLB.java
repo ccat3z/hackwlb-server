@@ -135,6 +135,7 @@ public class HackWLB implements Runnable,HackTask {
             OutputStream os = httpExchange.getResponseBody();
             os.write(resp.getBytes());
             os.flush();
+            os.close();
         }
     }
 
@@ -147,6 +148,7 @@ public class HackWLB implements Runnable,HackTask {
             OutputStream os = httpExchange.getResponseBody();
             os.write(resp.getBytes());
             os.flush();
+            os.close();
         }
     }
 
@@ -160,6 +162,7 @@ public class HackWLB implements Runnable,HackTask {
             OutputStream os = httpExchange.getResponseBody();
             os.write(resp.getBytes());
             os.flush();
+            os.close();
         }
     }
 }
