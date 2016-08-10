@@ -181,17 +181,19 @@
     <mkdir dir="${artifact.temp.output.out}"/>
     <jar destfile="${temp.jar.path.out.jar}" duplicate="preserve" filesetmanifest="mergewithoutmain">
       <zipfileset file="${basedir}/META-INF/MANIFEST.MF" prefix="META-INF"/>
+      <zipfileset dir="${hackwlb-server.output.dir}"/>
       <zipfileset src="${basedir}/lib/commons-codec-1.9.jar"/>
       <zipfileset src="${basedir}/lib/commons-logging-1.2.jar"/>
       <zipfileset src="${basedir}/lib/fluent-hc-4.5.2.jar"/>
       <zipfileset src="${basedir}/lib/httpclient-4.5.2.jar"/>
-      <zipfileset src="${basedir}/lib/httpclient-win-4.5.2.jar"/>
       <zipfileset src="${basedir}/lib/httpclient-cache-4.5.2.jar"/>
+      <zipfileset src="${basedir}/lib/httpclient-win-4.5.2.jar"/>
       <zipfileset src="${basedir}/lib/httpcore-4.4.4.jar"/>
-      <zipfileset src="${basedir}/lib/jna-4.1.0.jar"/>
       <zipfileset src="${basedir}/lib/httpmime-4.5.2.jar"/>
-      <zipfileset src="${basedir}/lib/jna-platform-4.1.0.jar"/>
-      <zipfileset dir="${hackwlb-server.output.dir}"/>
+      <zipfileset src="${basedir}/lib/json.jar"/>
+      <manifest>
+        <attribute name="Main-Class" value="com.zf3zzzx.HackWLBServer"/>
+      </manifest>
     </jar>
     <copy file="${temp.jar.path.out.jar}" tofile="${artifact.temp.output.out}/out.jar"/>
   </target>

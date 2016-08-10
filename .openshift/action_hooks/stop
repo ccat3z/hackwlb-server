@@ -1,0 +1,8 @@
+#!/bin/bash
+if [ -z "$(ps -ef | grep server.jar | grep -v grep)" ]
+then
+    echo "Application is not running"
+else
+    kill `ps -ef | grep server.jar | grep -v grep | awk '{ print $2 }'` > /dev/null 2>&1
+    echo "Application stopped"
+fi

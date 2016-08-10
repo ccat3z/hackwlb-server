@@ -1,0 +1,22 @@
+#! /bin/bash
+cd $OPENSHIFT_REPO_DIR
+ANT_URL="https://www.apache.org/dist/ant/binaries/apache-ant-1.9.7-bin.tar.bz2"
+ANT_TAR_FILE="apache-ant-1.9.7-bin.tar.bz2"
+ANT="./apache-ant-1.9.7/bin/ant"
+
+which ant &> /dev/null
+if [ $? != 0 ];then  
+    echo "Downloding ANT..."
+    wget $ANT_URL &> /dev/null
+    tar -xf $ANT_TAR_FILE &> /dev/null
+fi
+
+echo "Building jar with ANT..."
+$ANT -f hackwlb-server.xml &> /dev/null
+cp out/artifacts/out/out.jar server.jar
+
+echo "Removing useless files..."
+rm -rf $(ls -A | sed -n '/^\.git$/!{/^\.openshift$/!{/^server\.jar$/!p}}')
+
+md5sum server.jar
+echo "Done!"
