@@ -162,7 +162,7 @@ public class HackVote implements Runnable, HackTask{
                 } else {
                     try {
                         int id = Integer.parseInt(pars[0]);
-                        resp += "id:" + id + ",time:" + getVote(id) + "\n";
+                        resp += "id:" + id + ",vote:" + getVote(id) + "\n";
                     } catch (NumberFormatException e) {
                         resp += "wrong parameter\n";
                     }
