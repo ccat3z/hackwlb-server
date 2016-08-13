@@ -33,4 +33,4 @@ WORKDIR /usr/src/myapp
 RUN ant -f hackwlb-server.xml \
     && cp out/artifacts/out/out.jar /server.jar
 
-CMD ['java','-jar','/server.jar','0.0.0.0','80']
+CMD java -jar /server.jar 0.0.0.0 80
