@@ -11,7 +11,7 @@ public class HackVote implements Runnable, HackTask{
     private boolean run = false;
     private int id = 0;
     private int time = 0;
-    private int state = 0;
+    private boolean state = false;
     private int speed = 0;
     private Thread speedTestThread;
     private int thread;
@@ -21,6 +21,7 @@ public class HackVote implements Runnable, HackTask{
         server.createContext("/" + tag + "/start", new StartHandler());
         server.createContext("/" + tag + "/state", new StateHandler());
         server.createContext("/" + tag + "/stop", new StopHandler());
+        server.createContext("/" + tag + "/vote", new VoteHandler());
     }
 
     @Override
@@ -59,13 +60,18 @@ public class HackVote implements Runnable, HackTask{
         return "run state:" + run
                 + ",id:" + id
                 + ",time:" + time
-                + ",vote:" + state
-                + ",speed:" + speed
-                + ",thread:" + thread;
+                + ",state:" + state
+                + ",speed:" + speed + "votes/min"
+                + ",thread:" + thread
+                + ",vote:" + getVote(id);
     }
 
-    protected int voteOnce(int id) {
-        return -1;
+    protected boolean voteOnce(int id) {
+        return false;
+    }
+
+    protected long getVote(int id) {
+        return 0;
     }
 
     private class SpeedTest implements Runnable {
@@ -75,7 +81,7 @@ public class HackVote implements Runnable, HackTask{
             while (run){
                 int oldtime = time;
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(60000);
                 } catch (Exception e) {
 
                 }
@@ -136,6 +142,34 @@ public class HackVote implements Runnable, HackTask{
             String resp = "";
             stop();
             resp += "stoped" + "\n";
+            httpExchange.sendResponseHeaders(200, resp.length());
+            OutputStream os = httpExchange.getResponseBody();
+            os.write(resp.getBytes());
+            os.flush();
+            os.close();
+        }
+    }
+
+    private class VoteHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange httpExchange) throws IOException {
+            String resp = "";
+            String par = httpExchange.getRequestURI().getQuery();
+            if(par != null) {
+                String pars[] = par.split("&");
+                if (pars.length != 1){
+                    resp += "wrong parameter\n";
+                } else {
+                    try {
+                        int id = Integer.parseInt(pars[0]);
+                        resp += "id:" + id + ",time:" + getVote(id) + "\n";
+                    } catch (NumberFormatException e) {
+                        resp += "wrong parameter\n";
+                    }
+                }
+            } else  {
+                resp += "no parameter\n";
+            }
             httpExchange.sendResponseHeaders(200, resp.length());
             OutputStream os = httpExchange.getResponseBody();
             os.write(resp.getBytes());

@@ -39,10 +39,10 @@
     <include name="*.swc"/>
     <include name="*.apk"/>
     <include name="*.zip"/>
-    <include name="*.ear"/>
     <include name="*.egg"/>
     <include name="*.ane"/>
     <include name="*.jar"/>
+    <include name="*.ear"/>
   </patternset>
   <patternset id="compiler.resources">
     <exclude name="**/?*.java"/>
@@ -76,6 +76,10 @@
     <pathelement location="${basedir}/lib/json.jar"/>
   </path>
   
+  <path id="library.jsoup-1.9.2.classpath">
+    <pathelement location="${basedir}/lib/jsoup-1.9.2.jar"/>
+  </path>
+  
   <!-- Modules -->
   
   
@@ -97,18 +101,21 @@
   <path id="hackwlb-server.module.production.classpath">
     <path refid="library.httpcomponents-client-4.5.2.classpath"/>
     <path refid="library.json.classpath"/>
+    <path refid="library.jsoup-1.9.2.classpath"/>
   </path>
   
   <path id="hackwlb-server.runtime.production.module.classpath">
     <pathelement location="${hackwlb-server.output.dir}"/>
     <path refid="library.httpcomponents-client-4.5.2.classpath"/>
     <path refid="library.json.classpath"/>
+    <path refid="library.jsoup-1.9.2.classpath"/>
   </path>
   
   <path id="hackwlb-server.module.classpath">
     <pathelement location="${hackwlb-server.output.dir}"/>
     <path refid="library.httpcomponents-client-4.5.2.classpath"/>
     <path refid="library.json.classpath"/>
+    <path refid="library.jsoup-1.9.2.classpath"/>
   </path>
   
   <path id="hackwlb-server.runtime.module.classpath">
@@ -116,6 +123,7 @@
     <pathelement location="${hackwlb-server.output.dir}"/>
     <path refid="library.httpcomponents-client-4.5.2.classpath"/>
     <path refid="library.json.classpath"/>
+    <path refid="library.jsoup-1.9.2.classpath"/>
   </path>
   
   
@@ -191,6 +199,7 @@
       <zipfileset src="${basedir}/lib/httpcore-4.4.4.jar"/>
       <zipfileset src="${basedir}/lib/httpmime-4.5.2.jar"/>
       <zipfileset src="${basedir}/lib/json.jar"/>
+      <zipfileset src="${basedir}/lib/jsoup-1.9.2.jar"/>
       <manifest>
         <attribute name="Main-Class" value="com.zf3zzzx.HackWLBServer"/>
       </manifest>
