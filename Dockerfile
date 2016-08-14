@@ -3,6 +3,9 @@ FROM alpine:3.4
 ENV LANG C.UTF-8
 EXPOSE 80
 
+#china repo
+RUN sed -i "s/dl-cdn\.alpinelinux\.org/mirrors.ustc.edu.cn/" /etc/apk/repositories
+
 #install openjdk8
 RUN echo "LOG:Installing openjdk8..."
 RUN { \
