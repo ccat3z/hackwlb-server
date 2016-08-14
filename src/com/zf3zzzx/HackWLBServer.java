@@ -1,5 +1,7 @@
 package com.zf3zzzx;
 
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import com.zf3zzzx.tasks.HackWLB;
 import com.zf3zzzx.tasks.HackZXB;
@@ -21,6 +23,7 @@ public class HackWLBServer {
         InetSocketAddress address = new InetSocketAddress(serv, port);
         try {
             HttpServer server = HttpServer.create(address, 5);
+            server.createContext("/",new IndexHandler());
             new HackWLB().initServer("wlb",server);
             new HackZXB().initServer("zxb",server);
             server.setExecutor(null);
@@ -31,4 +34,17 @@ public class HackWLBServer {
         }
     }
 
+    private class IndexHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange httpExchange) throws IOException {
+            String resp = "";
+            resp += "HackWLBServer" + "\n"
+                    + "by c0ldcat" + "\n";
+            httpExchange.sendResponseHeaders(200, resp.length());
+            OutputStream os = httpExchange.getResponseBody();
+            os.write(resp.getBytes());
+            os.flush();
+            os.close();
+        }
+    }
 }

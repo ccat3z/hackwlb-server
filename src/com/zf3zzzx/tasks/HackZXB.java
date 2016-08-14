@@ -18,6 +18,8 @@ import org.json.JSONObject;
 import java.io.IOException;
 
 public class HackZXB extends HackVote {
+    private int rank = 0;
+
     @Override
     protected boolean voteOnce(int id) {
         HttpClient httpClient = HttpClients.createDefault();
@@ -89,16 +91,25 @@ public class HackZXB extends HackVote {
         }
         if (resp == null) {
             Utils.log("vote " + id + " request failed");
+            rank = 0;
             return -1;
         } else {
             JSONArray jsonArray = new JSONObject(resp).getJSONObject("data").getJSONArray("vote-item");
             if (jsonArray == null) return -1;
+            rank = 0;
             for (Object o : jsonArray) {
+                rank++;
                 if (((JSONObject) o).getInt("id") == id) {
                     return ((JSONObject) o).getInt("voteCount");
                 }
             }
+            rank = 0;
             return -1;
         }
+    }
+
+    @Override
+    protected int getRank(int id) {
+        return rank;
     }
 }

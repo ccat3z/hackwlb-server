@@ -63,7 +63,8 @@ public class HackVote implements Runnable, HackTask{
                 + ",state:" + state
                 + ",speed:" + speed + "votes/min"
                 + ",thread:" + thread
-                + ",vote:" + getVote(id);
+                + ",vote:" + getVote(id)
+                + ",rank:" + getRank(id);
     }
 
     protected boolean voteOnce(int id) {
@@ -71,6 +72,10 @@ public class HackVote implements Runnable, HackTask{
     }
 
     protected long getVote(int id) {
+        return 0;
+    }
+
+    protected int getRank(int id) {
         return 0;
     }
 
@@ -162,7 +167,10 @@ public class HackVote implements Runnable, HackTask{
                 } else {
                     try {
                         int id = Integer.parseInt(pars[0]);
-                        resp += "id:" + id + ",vote:" + getVote(id) + "\n";
+                        resp += "id:" + id
+                                + ",vote:" + getVote(id)
+                                + ",rank:" + getRank(id)
+                                + "\n";
                     } catch (NumberFormatException e) {
                         resp += "wrong parameter\n";
                     }
