@@ -201,7 +201,7 @@
       <zipfileset src="${basedir}/lib/json.jar"/>
       <zipfileset src="${basedir}/lib/jsoup-1.9.2.jar"/>
       <manifest>
-        <attribute name="Main-Class" value="com.zf3zzzx.HackWLBServer"/>
+        <attribute name="Main-Class" value="com.c0ldcat.HackWLBServer"/>
       </manifest>
     </jar>
     <copy file="${temp.jar.path.out.jar}" tofile="${artifact.temp.output.out}/out.jar"/>

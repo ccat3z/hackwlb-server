@@ -1,12 +1,13 @@
-package com.zf3zzzx;
+package com.c0ldcat;
 
+import com.c0ldcat.tasks.HackWLB;
+import com.c0ldcat.tasks.HackZXB;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import com.zf3zzzx.tasks.HackWLB;
-import com.zf3zzzx.tasks.HackZXB;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 
 public class HackWLBServer {

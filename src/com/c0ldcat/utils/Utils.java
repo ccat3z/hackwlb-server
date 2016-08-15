@@ -1,4 +1,4 @@
-package com.zf3zzzx.utils;
+package com.c0ldcat.utils;
 
 import java.io.BufferedReader;
 import java.io.IOException;

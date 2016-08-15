@@ -1,8 +1,7 @@
-package com.zf3zzzx.tasks;
+package com.c0ldcat.tasks;
 
-import com.zf3zzzx.utils.HackVote;
-import com.zf3zzzx.utils.Utils;
-import org.apache.commons.logging.Log;
+import com.c0ldcat.utils.HackVote;
+import com.c0ldcat.utils.Utils;
 import org.apache.http.Consts;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
