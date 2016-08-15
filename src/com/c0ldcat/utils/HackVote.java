@@ -6,6 +6,7 @@ import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
 
 public class HackVote implements Runnable, HackTask{
     private boolean run = false;
@@ -102,23 +103,18 @@ public class HackVote implements Runnable, HackTask{
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
             String resp = "";
-            String par = httpExchange.getRequestURI().getQuery();
-            if(par != null) {
-                String pars[] = par.split("&");
-                if (pars.length != 2){
-                    resp += "wrong parameter\n";
-                } else {
-                    try {
-                        int id = Integer.parseInt(pars[0]);
-                        int time = Integer.parseInt(pars[1]);
-                        resp += "id:" + id + ",time:" + time + "\n";
-                        start(id,time);
-                    } catch (NumberFormatException e) {
-                        resp += "wrong parameter\n";
-                    }
+            HashMap<String, String> pars = UrlParameterParser.parse(httpExchange.getRequestURI().getQuery());
+            if (pars.containsKey("id") && pars.containsKey("time")){
+                try {
+                    int id = Integer.parseInt(pars.get("id"));
+                    int time = Integer.parseInt(pars.get("time"));
+                    resp += "id:" + id + ",time:" + time + "\n";
+                    start(id,time);
+                } catch (NumberFormatException e) {
+                    resp += "wrong parameter (id&time)\n";
                 }
-            } else  {
-                resp += "no parameter\n";
+            } else {
+                resp += "no parameter (id&time)\n";
             }
             httpExchange.sendResponseHeaders(200, resp.length());
             OutputStream os = httpExchange.getResponseBody();
@@ -159,24 +155,19 @@ public class HackVote implements Runnable, HackTask{
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
             String resp = "";
-            String par = httpExchange.getRequestURI().getQuery();
-            if(par != null) {
-                String pars[] = par.split("&");
-                if (pars.length != 1){
-                    resp += "wrong parameter\n";
-                } else {
-                    try {
-                        int id = Integer.parseInt(pars[0]);
-                        resp += "id:" + id
-                                + ",vote:" + getVote(id)
-                                + ",rank:" + getRank(id)
-                                + "\n";
-                    } catch (NumberFormatException e) {
-                        resp += "wrong parameter\n";
-                    }
+            HashMap<String, String> pars = UrlParameterParser.parse(httpExchange.getRequestURI().getQuery());
+            if (pars.containsKey("id")){
+                try {
+                    int id = Integer.parseInt(pars.get("id"));
+                    resp += "id:" + id
+                            + ",vote:" + getVote(id)
+                            + ",rank:" + getRank(id)
+                            + "\n";
+                } catch (NumberFormatException e) {
+                    resp += "wrong parameter (id&time)\n";
                 }
-            } else  {
-                resp += "no parameter\n";
+            } else {
+                resp += "no parameter (id&time)\n";
             }
             httpExchange.sendResponseHeaders(200, resp.length());
             OutputStream os = httpExchange.getResponseBody();
