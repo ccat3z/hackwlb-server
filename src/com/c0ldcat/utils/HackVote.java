@@ -113,10 +113,17 @@ public class HackVote implements Runnable, HackTask{
                     Utils.httpResp("id:" + id + ",time:" + time + "\n", httpExchange);
                     start(id,time);
                 } catch (NumberFormatException e) {
-                    Utils.httpResp("wrong parameter (id&time)\n", httpExchange);
+                    new EnterPage(httpExchange).add(pars).push();
                 }
             } else {
-                Utils.httpResp("no parameter (id&time)\n", httpExchange);
+                EnterPage enterPage = new EnterPage(httpExchange).add(pars);
+                if(!pars.containsKey("id")){
+                    enterPage.add(EnterPage.TYPE_TEXT, "id");
+                }
+                if(!pars.containsKey("time")){
+                    enterPage.add(EnterPage.TYPE_TEXT, "time");
+                }
+                enterPage.push();
             }
         }
     }
@@ -149,10 +156,12 @@ public class HackVote implements Runnable, HackTask{
                             + ",rank:" + getRank(id)
                             + "\n", httpExchange);
                 } catch (NumberFormatException e) {
-                    Utils.httpResp("wrong parameter (id)\n", httpExchange);
+                    new EnterPage(httpExchange).add(pars).push();
                 }
             } else {
-                Utils.httpResp("no parameter (id)\n", httpExchange);
+                EnterPage enterPage = new EnterPage(httpExchange).add(pars);
+                enterPage.add(EnterPage.TYPE_TEXT, "id");
+                enterPage.push();
             }
         }
     }

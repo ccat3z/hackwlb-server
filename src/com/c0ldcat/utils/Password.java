@@ -9,6 +9,7 @@ import java.util.HashMap;
 public class Password implements HttpHandler{
     private HttpHandler handler;
     private String pass;
+    static final public String PAR_PASS = "pass";
 
     public Password(String pass, HttpHandler httpHandler) {
         this.handler = httpHandler;
@@ -18,14 +19,14 @@ public class Password implements HttpHandler{
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
         HashMap<String, String> pars = UrlParameterParser.parse(httpExchange.getRequestURI().getQuery());
-        if (pars.containsKey("pass")){
-            if (pars.get("pass").equals(pass)) {
+        if (pars.containsKey(PAR_PASS)){
+            if (pars.get(PAR_PASS).equals(pass)) {
                 handler.handle(httpExchange);
             } else {
-                Utils.httpResp("wrong parameter (pass)\n", httpExchange);
+                new EnterPage(httpExchange).add(pars).push();
             }
         } else {
-            Utils.httpResp("no parameter (pass)\n", httpExchange);
+            new EnterPage(httpExchange).add(pars).add(EnterPage.TYPE_PASSWD, "pass").push();
         }
     }
 }
