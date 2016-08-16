@@ -66,6 +66,6 @@ public class EnterPage {
                                 )
                 )
         ).toString();
-        Utils.httpResp(resp, httpExchange);
+        Utils.httpRespHtml(resp, httpExchange);
     }
 }

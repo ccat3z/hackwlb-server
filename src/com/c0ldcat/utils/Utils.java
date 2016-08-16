@@ -68,4 +68,13 @@ public class Utils {
         os.flush();
         os.close();
     }
+
+    public static void httpRespHtml(String resp, HttpExchange httpExchange) throws IOException {
+        httpExchange.getResponseHeaders().add("Content-Type","text/html");
+        httpExchange.sendResponseHeaders(200, resp.length());
+        OutputStream os = httpExchange.getResponseBody();
+        os.write(resp.getBytes());
+        os.flush();
+        os.close();
+    }
 }
