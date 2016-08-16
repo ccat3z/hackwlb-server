@@ -4,7 +4,6 @@ ENV LANG C.UTF-8
 EXPOSE 80
 
 #install openjdk8
-RUN echo "LOG:Installing openjdk8..."
 RUN { \
 		echo '#!/bin/sh'; \
 		echo 'set -e'; \
