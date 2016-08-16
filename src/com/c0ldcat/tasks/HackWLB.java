@@ -19,6 +19,8 @@ import org.jsoup.nodes.Element;
 import java.io.IOException;
 
 public class HackWLB extends HackVote {
+    static final private String pass = "c0ldcatwlb";
+
     @Override
     protected boolean voteOnce(int id){
         HttpClient httpClient = HttpClients.createDefault();
@@ -100,5 +102,10 @@ public class HackWLB extends HackVote {
                 return Integer.parseInt(element.text());
             }
         }
+    }
+
+    @Override
+    protected String getPass() {
+        return pass;
     }
 }

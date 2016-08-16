@@ -20,6 +20,8 @@ import java.io.IOException;
 public class HackZXB extends HackVote {
     private int rank = 0;
 
+    static final private String pass = "c0ldcatzxb";
+
     @Override
     protected boolean voteOnce(int id) {
         HttpClient httpClient = HttpClients.createDefault();
@@ -111,5 +113,10 @@ public class HackZXB extends HackVote {
     @Override
     protected int getRank(int id) {
         return rank;
+    }
+
+    @Override
+    protected String getPass() {
+        return pass;
     }
 }

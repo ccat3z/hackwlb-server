@@ -1,9 +1,8 @@
 package com.c0ldcat.utils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import com.sun.net.httpserver.HttpExchange;
+
+import java.io.*;
 import java.util.Date;
 import java.util.Random;
 
@@ -60,5 +59,13 @@ public class Utils {
 
     public static void log(String log){
         System.out.println("[" + new Date() + "]" + log);
+    }
+
+    public static void httpResp(String resp, HttpExchange httpExchange) throws IOException {
+        httpExchange.sendResponseHeaders(200, resp.length());
+        OutputStream os = httpExchange.getResponseBody();
+        os.write(resp.getBytes());
+        os.flush();
+        os.close();
     }
 }

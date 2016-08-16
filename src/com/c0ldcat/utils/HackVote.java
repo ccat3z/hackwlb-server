@@ -5,7 +5,6 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.HashMap;
 
 public class HackVote implements Runnable, HackTask{
@@ -19,9 +18,9 @@ public class HackVote implements Runnable, HackTask{
 
     @Override
     public void initServer(String tag, HttpServer server) {
-        server.createContext("/" + tag + "/start", new StartHandler());
+        server.createContext("/" + tag + "/start", new Password(getPass(), new StartHandler()));
         server.createContext("/" + tag + "/state", new StateHandler());
-        server.createContext("/" + tag + "/stop", new StopHandler());
+        server.createContext("/" + tag + "/stop", new Password(getPass(), new StopHandler()));
         server.createContext("/" + tag + "/vote", new VoteHandler());
     }
 
@@ -80,6 +79,10 @@ public class HackVote implements Runnable, HackTask{
         return 0;
     }
 
+    protected String getPass() {
+        return "123456";
+    }
+
     private class SpeedTest implements Runnable {
         @Override
         public void run() {
@@ -102,52 +105,34 @@ public class HackVote implements Runnable, HackTask{
     private class StartHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
-            String resp = "";
             HashMap<String, String> pars = UrlParameterParser.parse(httpExchange.getRequestURI().getQuery());
             if (pars.containsKey("id") && pars.containsKey("time")){
                 try {
                     int id = Integer.parseInt(pars.get("id"));
                     int time = Integer.parseInt(pars.get("time"));
-                    resp += "id:" + id + ",time:" + time + "\n";
+                    Utils.httpResp("id:" + id + ",time:" + time + "\n", httpExchange);
                     start(id,time);
                 } catch (NumberFormatException e) {
-                    resp += "wrong parameter (id&time)\n";
+                    Utils.httpResp("wrong parameter (id&time)\n", httpExchange);
                 }
             } else {
-                resp += "no parameter (id&time)\n";
+                Utils.httpResp("no parameter (id&time)\n", httpExchange);
             }
-            httpExchange.sendResponseHeaders(200, resp.length());
-            OutputStream os = httpExchange.getResponseBody();
-            os.write(resp.getBytes());
-            os.flush();
-            os.close();
         }
     }
 
     private class StateHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
-            String resp = "";
-            resp += getStateString() + "\n";
-            httpExchange.sendResponseHeaders(200, resp.length());
-            OutputStream os = httpExchange.getResponseBody();
-            os.write(resp.getBytes());
-            os.flush();
-            os.close();
+            Utils.httpResp(getStateString() + "\n", httpExchange);
         }
     }
 
     private class StopHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
-            String resp = "";
             stop();
-            resp += "stoped" + "\n";
-            httpExchange.sendResponseHeaders(200, resp.length());
-            OutputStream os = httpExchange.getResponseBody();
-            os.write(resp.getBytes());
-            os.flush();
-            os.close();
+            Utils.httpResp("stopded\n", httpExchange);
         }
     }
 
@@ -159,21 +144,16 @@ public class HackVote implements Runnable, HackTask{
             if (pars.containsKey("id")){
                 try {
                     int id = Integer.parseInt(pars.get("id"));
-                    resp += "id:" + id
+                    Utils.httpResp( "id:" + id
                             + ",vote:" + getVote(id)
                             + ",rank:" + getRank(id)
-                            + "\n";
+                            + "\n", httpExchange);
                 } catch (NumberFormatException e) {
-                    resp += "wrong parameter (id&time)\n";
+                    Utils.httpResp("wrong parameter (id)\n", httpExchange);
                 }
             } else {
-                resp += "no parameter (id&time)\n";
+                Utils.httpResp("no parameter (id)\n", httpExchange);
             }
-            httpExchange.sendResponseHeaders(200, resp.length());
-            OutputStream os = httpExchange.getResponseBody();
-            os.write(resp.getBytes());
-            os.flush();
-            os.close();
         }
     }
 }
