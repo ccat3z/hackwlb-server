@@ -1,4 +1,4 @@
 #!/bin/bash
-nohup java -jar $OPENSHIFT_REPO_DIR/server.jar $OPENSHIFT_DIY_IP 8080 |& /usr/bin/logshifter -tag hackwlb &
+nohup java -jar $OPENSHIFT_REPO_DIR/server.jar $OPENSHIFT_DIY_IP $OPENSHIFT_DIY_PORT |& /usr/bin/logshifter -tag hackwlb &
 
 echo "Application started"
