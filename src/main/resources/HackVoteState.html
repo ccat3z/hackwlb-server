@@ -52,13 +52,13 @@
             if (i === 0){
                 document.getElementById("run_state").innerHTML = "done";
                 setTimeout(get_state, 5 * 1000);
-                console.log("log");
             }
         }
         for (id in states) {
             (function () {
                 var str = states[id];
-                httpGet(document.URL + "/" + states[id], function () {
+                var url = document.URL.replace(/\/$/,"") + "/" + states[id];
+                httpGet(url, function () {
                     document.getElementById(str).innerHTML = "timeout";
                     i--;
                     test_end();
