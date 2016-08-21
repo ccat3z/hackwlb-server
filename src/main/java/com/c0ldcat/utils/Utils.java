@@ -3,6 +3,7 @@ package com.c0ldcat.utils;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Random;
 
@@ -39,7 +40,7 @@ public class Utils {
         StringBuilder sb = new StringBuilder();
         String line;
         try {
-            br = new BufferedReader(new InputStreamReader(is));
+            br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
             while ((line = br.readLine()) != null) {
                 sb.append(line);
             }
@@ -82,10 +83,10 @@ public class Utils {
     }
 
     public static void httpRespHtml(String resp, HttpExchange httpExchange) throws IOException {
-        httpExchange.getResponseHeaders().add("Content-Type","text/html");
-        httpExchange.sendResponseHeaders(200, resp.length());
+        httpExchange.getResponseHeaders().add("Content-Type","text/html; charset=utf-8");
+        httpExchange.sendResponseHeaders(200, resp.getBytes(StandardCharsets.UTF_8).length);
         OutputStream os = httpExchange.getResponseBody();
-        os.write(resp.getBytes());
+        os.write(resp.getBytes(StandardCharsets.UTF_8));
         os.flush();
         os.close();
     }
