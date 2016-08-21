@@ -1,0 +1,4 @@
+#!/bin/bash
+
+$OPENSHIFT_REPO_DIR/.openshift/stop
+$OPENSHIFT_REPO_DIR/.openshift/start
