@@ -110,6 +110,11 @@ public class HackWLB extends HackVote {
 
     @Override
     protected int getRank(int id) {
+        //if no id
+        if (id == 0){
+            return -1;
+        }
+
         //send http post
         HttpClient httpClient = HttpClients.createDefault();
         HttpPost httpPost = new HttpPost("http://weilaibei.smartstudy.com/Ajax/GetPm.aspx");
