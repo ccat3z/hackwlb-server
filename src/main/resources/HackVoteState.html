@@ -28,7 +28,7 @@
     }
 
     var state_div=document.getElementById("state");
-    var states=["id","vote","rank","time","speed","thread","run-state","vote-state"];
+    var states=["id","vote","rank","time","speed","thread","delay","run-state","vote-state"];
 
     var id;
 
@@ -48,7 +48,9 @@
         function test_end () {
             document.getElementById("run_state").innerHTML = "getting...(" + i + ")";
             if (i === 0){
-                document.getElementById("run_state").innerHTML = "done"
+                document.getElementById("run_state").innerHTML = "done";
+                setTimeout(get_state, 5 * 1000);
+                console.log("log");
             }
         }
         for (id in states) {
@@ -68,7 +70,6 @@
     }
 
     get_state();
-    setInterval(get_state, 60 * 1000);
 </script>
 </body>
 </html>

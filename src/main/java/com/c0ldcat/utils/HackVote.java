@@ -14,6 +14,7 @@ public class HackVote implements Runnable, HttpHandler{
     private int speed = 0;
     private Thread speedTestThread;
     private int thread;
+    private int delay;
     private HashMap<String, HttpHandler> actionMap;
 
     final static private String ACTION_START = "start";
@@ -26,6 +27,7 @@ public class HackVote implements Runnable, HttpHandler{
     final static private String ACTION_TIME = "time";
     final static private String ACTION_SPEED = "speed";
     final static private String ACTION_THREAD = "thread";
+    final static private String ACTION_DELAY = "delay";
     final static private String ACTION_RUN_STATE = "run-state";
     final static private String ACTION_VOTE_STATE = "vote-state";
 
@@ -50,16 +52,22 @@ public class HackVote implements Runnable, HttpHandler{
                 Utils.httpResp(time, httpExchange);
             }
         });
+        actionMap.put(ACTION_SPEED, new HttpHandler() {
+            @Override
+            public void handle(HttpExchange httpExchange) throws IOException {
+                Utils.httpResp(speed, httpExchange);
+            }
+        });
         actionMap.put(ACTION_THREAD, new HttpHandler() {
             @Override
             public void handle(HttpExchange httpExchange) throws IOException {
                 Utils.httpResp(thread, httpExchange);
             }
         });
-        actionMap.put(ACTION_SPEED, new HttpHandler() {
+        actionMap.put(ACTION_DELAY, new HttpHandler() {
             @Override
             public void handle(HttpExchange httpExchange) throws IOException {
-                Utils.httpResp(speed, httpExchange);
+                Utils.httpResp(delay, httpExchange);
             }
         });
         actionMap.put(ACTION_RUN_STATE, new HttpHandler() {
@@ -101,16 +109,25 @@ public class HackVote implements Runnable, HttpHandler{
         while (run & id != 0 & time != 0){
             time--;
             state = voteOnce(id);
+            try {
+                Thread.sleep(delay * 1000);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         run = false;
         thread--;
         Utils.log("Vote Thread Stop");
     }
 
-    public void start(int id, int time, int thread){
+    public void start(int id, int time, int thread, int delay){
         this.id = id;
         this.time = time;
         this.run = true;
+        this.delay = delay;
+        if (delay != 0) {
+            thread = 1;
+        }
         if (speedTestThread == null) {
             speedTestThread = new Thread(new SpeedTest());
             speedTestThread.start();
@@ -163,9 +180,10 @@ public class HackVote implements Runnable, HttpHandler{
                     int id = Integer.parseInt(pars.get("id"));
                     int time = Integer.parseInt(pars.get("time"));
                     int thread = Integer.parseInt(pars.get("thread"));
+                    int delay = Integer.parseInt(pars.get("delay"));
                     if (!run) {
                         Utils.httpResp(true, httpExchange);
-                        start(id, time, thread);
+                        start(id, time, thread, delay);
                     } else {
                         Utils.httpResp(false, httpExchange);
                     }
@@ -182,6 +200,9 @@ public class HackVote implements Runnable, HttpHandler{
                 }
                 if(!pars.containsKey("thread")){
                     enterPage.add(EnterPage.TYPE_TEXT, "thread", "10");
+                }
+                if(!pars.containsKey("delay")){
+                    enterPage.add(EnterPage.TYPE_TEXT, "delay", "0");
                 }
                 enterPage.push();
             }
