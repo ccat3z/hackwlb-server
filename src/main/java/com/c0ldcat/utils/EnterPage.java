@@ -24,9 +24,10 @@ public class EnterPage {
 
     public EnterPage add(String type, String name, String value) {
         inputTags.add(
-                p(name + ":").with(
-                        input()
-                                .withType(type)
+                p().with(
+                        span(name + ":").withId(name)
+                                .withClass("info"),
+                        input().withType(type)
                                 .withName(name)
                                 .withValue(value)
                 )
@@ -52,20 +53,16 @@ public class EnterPage {
     }
 
     public void push() throws IOException{
-        String resp = html().with(
-                head().with(
-                        title("EnterPage")
-                ),
-                body().with(
+        String resp = Utils.getStringFromInputStream(getClass().getResourceAsStream("/EnterPage.html"))
+                .replaceAll("FORM_PART",
                         form().withAction(httpExchange.getRequestURI().getPath()).withMethod("GET")
                                 .with(inputTags)
                                 .with(
-                                        input()
+                                        input().withId("submit")
+                                                .withClass("info")
                                                 .withType("submit")
                                                 .withValue("Submit")
-                                )
-                )
-        ).toString();
+                                ).toString());
         Utils.httpRespHtml(resp, httpExchange);
     }
 }

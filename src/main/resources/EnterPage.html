@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EnterPage</title>
+</head>
+<body>
+<div id="form">
+    FORM_PART
+</div>
+
+<script language="JavaScript">
+    var orig = ["id:","time:","thread:","delay:","Submit"];
+    var tran = ["编号:","次数:","线程:","延迟:","提交"];
+
+    var info_tags = document.getElementsByClassName("info");
+
+    for (var i = 0; i < info_tags.length ; i++) {
+        var index;
+        var tag=info_tags[i].tagName.toLowerCase();
+        switch (tag){
+            case "p":
+            case "span":
+                if ((index = orig.indexOf(info_tags[i].innerHTML)) != -1){
+                    info_tags[i].innerHTML=tran[index];
+                }
+                break;
+            case "input":
+                if ((index = orig.indexOf(info_tags[i].getAttribute("value"))) != -1){
+                    info_tags[i].setAttribute("value",tran[index]);
+                }
+                break;
+
+        }
+    }
+</script>
+</body>
+</html>
