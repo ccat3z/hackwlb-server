@@ -3,22 +3,10 @@ package com.c0ldcat.utils;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.*;
-import java.lang.Character.UnicodeBlock;
 import java.util.Date;
 import java.util.Random;
 
 public class Utils {
-    static public void main(String args[]) throws Exception{
-        int i = 299;
-        String s = "" + i;
-        log("" + s.length());
-        String re = "";
-        for (int j = 0; j < s.length(); j++){
-            re += String.format("%%u%04x",Character.codePointAt(s, j));
-        }
-        log(re);
-    }
-
     public static String getRandomIp(){
         int[][] range = {{607649792,608174079},//36.56.0.0-36.63.255.255
                 {1038614528,1039007743},//61.232.0.0-61.237.255.255
@@ -100,29 +88,5 @@ public class Utils {
         os.write(resp.getBytes());
         os.flush();
         os.close();
-    }
-
-    public static String utf8ToUnicode(String inStr) {
-        char[] myBuffer = inStr.toCharArray();
-
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < inStr.length(); i++) {
-            UnicodeBlock ub = UnicodeBlock.of(myBuffer[i]);
-            if(ub == UnicodeBlock.BASIC_LATIN){
-                //英文及数字等
-                sb.append(myBuffer[i]);
-            }else if(ub == UnicodeBlock.HALFWIDTH_AND_FULLWIDTH_FORMS){
-                //全角半角字符
-                int j = (int) myBuffer[i] - 65248;
-                sb.append((char)j);
-            }else{
-                //汉字
-                short s = (short) myBuffer[i];
-                String hexS = Integer.toHexString(s);
-                String unicode = "\\u"+hexS;
-                sb.append(unicode.toLowerCase());
-            }
-        }
-        return sb.toString();
     }
 }
