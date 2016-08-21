@@ -24,6 +24,7 @@ public class HackZXB extends HackVote {
 
     @Override
     protected boolean voteOnce(int id) {
+        //request vote
         HttpClient httpClient = HttpClients.createDefault();
         HttpPost httpPost = new HttpPost("http://a.ajmide.com/api.php?plugin=vote&action=postVoteWx&pp_id=478");
         try {
@@ -46,8 +47,10 @@ public class HackZXB extends HackVote {
             });
             resp = "" + new JSONObject(resp).getJSONObject("data").getInt("data");
         } catch (Exception e) {
-            e.printStackTrace();
+            Utils.log("request error");
         }
+
+        //analyze response
         if (resp == null) {
             Utils.log("vote " + id + " request failed");
             return false;
@@ -67,7 +70,7 @@ public class HackZXB extends HackVote {
                     return false;
                 default:
                     Utils.log("Vote " + id + " success (" + r + ")");
-                    return false;
+                    return true;
             }
         }
     }
@@ -89,7 +92,7 @@ public class HackZXB extends HackVote {
                 }
             });
         } catch (Exception e) {
-            e.printStackTrace();
+            Utils.log("request error");
         }
         if (resp == null) {
             Utils.log("vote " + id + " request failed");

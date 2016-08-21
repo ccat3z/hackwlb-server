@@ -2,12 +2,11 @@ package com.c0ldcat.utils;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
 import java.util.HashMap;
 
-public class HackVote implements Runnable, HackTask{
+public class HackVote implements Runnable, HttpHandler{
     private boolean run = false;
     private int id = 0;
     private int time = 0;
@@ -15,13 +14,39 @@ public class HackVote implements Runnable, HackTask{
     private int speed = 0;
     private Thread speedTestThread;
     private int thread;
+    private HashMap<String, HttpHandler> actionMap;
+
+    final static private String ACTION_START = "start";
+    final static private String ACTION_STOP = "stop";
+    final static private String ACTION_VOTE = "vote";
+    final static private String ACTION_RANK = "rank";
+    final static private String ACTION_TIME = "time";
+    final static private String ACTION_RUN_STATE = "run-state";
+    final static private String ACTION_VOTE_STATE = "run-state";
+
+    public HackVote() {
+        actionMap = new HashMap<>();
+        actionMap.put(ACTION_START, new StartHandler());
+        actionMap.put(ACTION_STOP, new StopHandler());
+        actionMap.put(ACTION_VOTE, new VoteHandler());
+        actionMap.put(ACTION_RUN_STATE, new RunStateHandler());
+    }
 
     @Override
-    public void initServer(String tag, HttpServer server) {
-        server.createContext("/" + tag + "/start", new Password(getPass(), new StartHandler()));
-        server.createContext("/" + tag + "/state", new StateHandler());
-        server.createContext("/" + tag + "/stop", new Password(getPass(), new StopHandler()));
-        server.createContext("/" + tag + "/vote", new VoteHandler());
+    public void handle(HttpExchange httpExchange) throws IOException {
+        String fullPath[] = httpExchange.getRequestURI().getPath().split("/");
+        if (fullPath.length != 0) {
+            String action = fullPath[fullPath.length - 1];
+            if (actionMap.containsKey(action)) {
+                actionMap.get(action).handle(httpExchange);
+                return;
+            }
+        }
+        Utils.httpResp(welcome(), httpExchange);
+    }
+
+    public String welcome() {
+        return "Welcome";
     }
 
     @Override
@@ -128,7 +153,7 @@ public class HackVote implements Runnable, HackTask{
         }
     }
 
-    private class StateHandler implements HttpHandler {
+    private class RunStateHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
             Utils.httpResp(getStateString() + "\n", httpExchange);

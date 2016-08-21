@@ -23,6 +23,7 @@ public class HackWLB extends HackVote {
 
     @Override
     protected boolean voteOnce(int id){
+        //request vote
         HttpClient httpClient = HttpClients.createDefault();
         HttpPost httpPost = new HttpPost("http://weilaibei.smartstudy.com/ajax/toupiao.aspx");
         try {
@@ -44,8 +45,10 @@ public class HackWLB extends HackVote {
                 }
             });
         } catch (Exception e) {
-            e.printStackTrace();
+            Utils.log("request error");
         }
+
+        //analyze response
         if(resp == null){
             Utils.log("vote " + id + " request failed");
             return false;
@@ -87,7 +90,7 @@ public class HackWLB extends HackVote {
                 }
             });
         } catch (Exception e) {
-            e.printStackTrace();
+            Utils.log("request error");
         }
         if(resp == null){
             Utils.log("vote " + id + " request failed");
