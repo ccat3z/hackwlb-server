@@ -94,12 +94,7 @@ public class HackVote implements Runnable, HttpHandler{
                 return;
             }
         }
-        Utils.httpResp(welcome(), httpExchange);
-    }
-
-    public String welcome() {
-        String resp = Utils.getStringFromInputStream(getClass().getResourceAsStream("/HackVoteState.html"));
-        return resp;
+        Utils.httpRespHtml(Utils.getStringFromInputStream(getClass().getResourceAsStream("/HackVoteState.html")), httpExchange);
     }
 
     @Override
