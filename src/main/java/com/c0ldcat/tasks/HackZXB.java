@@ -20,8 +20,6 @@ import java.io.IOException;
 public class HackZXB extends HackVote {
     private int rank = 0;
 
-    static final private String pass = "c0ldcatzxb";
-
     @Override
     protected boolean voteOnce(int id) {
         //request vote
@@ -82,6 +80,7 @@ public class HackZXB extends HackVote {
         final int TIMEOUTMS = 15 * 1000;
         RequestConfig requestConfig = RequestConfig.custom().setConnectionRequestTimeout(TIMEOUTMS).setConnectTimeout(TIMEOUTMS).setSocketTimeout(TIMEOUTMS).build();
         httpPost.setConfig(requestConfig);
+        httpPost.setHeader("X-Forwarded-For", Utils.getRandomIp());
         httpPost.setHeader("Content-type", "application/x-www-form-urlencoded");
         String resp = null;
         try {
@@ -115,11 +114,7 @@ public class HackZXB extends HackVote {
 
     @Override
     protected int getRank(int id) {
+        getVote(id);
         return rank;
-    }
-
-    @Override
-    protected String getPass() {
-        return pass;
     }
 }

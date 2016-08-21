@@ -18,18 +18,62 @@ public class HackVote implements Runnable, HttpHandler{
 
     final static private String ACTION_START = "start";
     final static private String ACTION_STOP = "stop";
+
+    final static private String ACTION_ID = "id";
     final static private String ACTION_VOTE = "vote";
     final static private String ACTION_RANK = "rank";
+
     final static private String ACTION_TIME = "time";
+    final static private String ACTION_SPEED = "speed";
+    final static private String ACTION_THREAD = "thread";
     final static private String ACTION_RUN_STATE = "run-state";
-    final static private String ACTION_VOTE_STATE = "run-state";
+    final static private String ACTION_VOTE_STATE = "vote-state";
 
     public HackVote() {
         actionMap = new HashMap<>();
+
         actionMap.put(ACTION_START, new StartHandler());
         actionMap.put(ACTION_STOP, new StopHandler());
+
+        actionMap.put(ACTION_ID, new HttpHandler() {
+            @Override
+            public void handle(HttpExchange httpExchange) throws IOException {
+                Utils.httpResp(id, httpExchange);
+            }
+        });
         actionMap.put(ACTION_VOTE, new VoteHandler());
-        actionMap.put(ACTION_RUN_STATE, new RunStateHandler());
+        actionMap.put(ACTION_RANK, new RankHandler());
+
+        actionMap.put(ACTION_TIME, new HttpHandler() {
+            @Override
+            public void handle(HttpExchange httpExchange) throws IOException {
+                Utils.httpResp(time, httpExchange);
+            }
+        });
+        actionMap.put(ACTION_THREAD, new HttpHandler() {
+            @Override
+            public void handle(HttpExchange httpExchange) throws IOException {
+                Utils.httpResp(thread, httpExchange);
+            }
+        });
+        actionMap.put(ACTION_SPEED, new HttpHandler() {
+            @Override
+            public void handle(HttpExchange httpExchange) throws IOException {
+                Utils.httpResp(speed, httpExchange);
+            }
+        });
+        actionMap.put(ACTION_RUN_STATE, new HttpHandler() {
+            @Override
+            public void handle(HttpExchange httpExchange) throws IOException {
+                Utils.httpResp(run, httpExchange);
+            }
+        });
+        actionMap.put(ACTION_VOTE_STATE, new HttpHandler() {
+            @Override
+            public void handle(HttpExchange httpExchange) throws IOException {
+                Utils.httpResp(state, httpExchange);
+            }
+        });
     }
 
     @Override
@@ -46,7 +90,8 @@ public class HackVote implements Runnable, HttpHandler{
     }
 
     public String welcome() {
-        return "Welcome";
+        String resp = Utils.getStringFromInputStream(getClass().getResourceAsStream("/HackVoteState.html"));
+        return resp;
     }
 
     @Override
@@ -62,11 +107,7 @@ public class HackVote implements Runnable, HttpHandler{
         Utils.log("Vote Thread Stop");
     }
 
-    public void start(){
-        start(id,time);
-    }
-
-    public void start(int id, int time){
+    public void start(int id, int time, int thread){
         this.id = id;
         this.time = time;
         this.run = true;
@@ -74,22 +115,13 @@ public class HackVote implements Runnable, HttpHandler{
             speedTestThread = new Thread(new SpeedTest());
             speedTestThread.start();
         }
-        new Thread(this).start();
+        for(int i = 0; i < thread; i++){
+            new Thread(this).start();
+        }
     }
 
     public void stop(){
         this.run = false;
-    }
-
-    public String getStateString() {
-        return "run state:" + run
-                + ",id:" + id
-                + ",time:" + time
-                + ",state:" + state
-                + ",speed:" + speed + "votes/min"
-                + ",thread:" + thread
-                + ",vote:" + getVote(id)
-                + ",rank:" + getRank(id);
     }
 
     protected boolean voteOnce(int id) {
@@ -102,10 +134,6 @@ public class HackVote implements Runnable, HttpHandler{
 
     protected int getRank(int id) {
         return 0;
-    }
-
-    protected String getPass() {
-        return "123456";
     }
 
     private class SpeedTest implements Runnable {
@@ -126,17 +154,21 @@ public class HackVote implements Runnable, HttpHandler{
         }
     }
 
-
     private class StartHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
             HashMap<String, String> pars = UrlParameterParser.parse(httpExchange.getRequestURI().getQuery());
-            if (pars.containsKey("id") && pars.containsKey("time")){
+            if (pars.containsKey("id") && pars.containsKey("time") && pars.containsKey("thread")){
                 try {
                     int id = Integer.parseInt(pars.get("id"));
                     int time = Integer.parseInt(pars.get("time"));
-                    Utils.httpResp("id:" + id + ",time:" + time + "\n", httpExchange);
-                    start(id,time);
+                    int thread = Integer.parseInt(pars.get("thread"));
+                    if (!run) {
+                        Utils.httpResp(true, httpExchange);
+                        start(id, time, thread);
+                    } else {
+                        Utils.httpResp(false, httpExchange);
+                    }
                 } catch (NumberFormatException e) {
                     new EnterPage(httpExchange).add(pars).push();
                 }
@@ -146,17 +178,13 @@ public class HackVote implements Runnable, HttpHandler{
                     enterPage.add(EnterPage.TYPE_TEXT, "id");
                 }
                 if(!pars.containsKey("time")){
-                    enterPage.add(EnterPage.TYPE_TEXT, "time");
+                    enterPage.add(EnterPage.TYPE_TEXT, "time", "1000");
+                }
+                if(!pars.containsKey("thread")){
+                    enterPage.add(EnterPage.TYPE_TEXT, "thread", "10");
                 }
                 enterPage.push();
             }
-        }
-    }
-
-    private class RunStateHandler implements HttpHandler {
-        @Override
-        public void handle(HttpExchange httpExchange) throws IOException {
-            Utils.httpResp(getStateString() + "\n", httpExchange);
         }
     }
 
@@ -164,29 +192,40 @@ public class HackVote implements Runnable, HttpHandler{
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
             stop();
-            Utils.httpResp("stopded\n", httpExchange);
+            Utils.httpResp(true, httpExchange);
         }
     }
 
     private class VoteHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
-            String resp = "";
             HashMap<String, String> pars = UrlParameterParser.parse(httpExchange.getRequestURI().getQuery());
             if (pars.containsKey("id")){
                 try {
                     int id = Integer.parseInt(pars.get("id"));
-                    Utils.httpResp( "id:" + id
-                            + ",vote:" + getVote(id)
-                            + ",rank:" + getRank(id)
-                            + "\n", httpExchange);
+                    Utils.httpResp(getVote(id), httpExchange);
                 } catch (NumberFormatException e) {
                     new EnterPage(httpExchange).add(pars).push();
                 }
             } else {
-                EnterPage enterPage = new EnterPage(httpExchange).add(pars);
-                enterPage.add(EnterPage.TYPE_TEXT, "id");
-                enterPage.push();
+                Utils.httpResp(getVote(id), httpExchange);
+            }
+        }
+    }
+
+    private class RankHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange httpExchange) throws IOException {
+            HashMap<String, String> pars = UrlParameterParser.parse(httpExchange.getRequestURI().getQuery());
+            if (pars.containsKey("id")){
+                try {
+                    int id = Integer.parseInt(pars.get("id"));
+                    Utils.httpResp(getRank(id), httpExchange);
+                } catch (NumberFormatException e) {
+                    new EnterPage(httpExchange).add(pars).push();
+                }
+            } else {
+                Utils.httpResp(getRank(id), httpExchange);
             }
         }
     }

@@ -12,6 +12,8 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -19,8 +21,6 @@ import org.jsoup.nodes.Element;
 import java.io.IOException;
 
 public class HackWLB extends HackVote {
-    static final private String pass = "c0ldcatwlb";
-
     @Override
     protected boolean voteOnce(int id){
         //request vote
@@ -80,6 +80,7 @@ public class HackWLB extends HackVote {
         final int TIMEOUTMS = 15 * 1000;
         RequestConfig requestConfig = RequestConfig.custom().setConnectionRequestTimeout(TIMEOUTMS).setConnectTimeout(TIMEOUTMS).setSocketTimeout(TIMEOUTMS).build();
         httpPost.setConfig(requestConfig);
+        httpPost.setHeader("X-Forwarded-For", Utils.getRandomIp());
         httpPost.setHeader("Content-type", "application/x-www-form-urlencoded");
         String resp = null;
         try {
@@ -108,7 +109,57 @@ public class HackWLB extends HackVote {
     }
 
     @Override
-    protected String getPass() {
-        return pass;
+    protected int getRank(int id) {
+        //send http post
+        HttpClient httpClient = HttpClients.createDefault();
+        HttpPost httpPost = new HttpPost("http://weilaibei.smartstudy.com/Ajax/GetPm.aspx");
+        final int TIMEOUTMS = 30 * 1000;
+        RequestConfig requestConfig = RequestConfig.custom().setConnectionRequestTimeout(TIMEOUTMS).setConnectTimeout(TIMEOUTMS).setSocketTimeout(TIMEOUTMS).build();
+        httpPost.setConfig(requestConfig);
+        httpPost.setHeader("X-Forwarded-For", Utils.getRandomIp());
+        httpPost.setHeader("Content-type", "application/x-www-form-urlencoded");
+        String resp = null;
+        try {
+            resp = httpClient.execute(httpPost, new ResponseHandler<String>() {
+                @Override
+                public String handleResponse(HttpResponse httpResponse) throws ClientProtocolException, IOException {
+                    return Utils.getStringFromInputStream(httpResponse.getEntity().getContent());
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            Utils.log("request error");
+        }
+
+        //analyze response
+        if(resp == null){ //if no response
+            Utils.log("rank " + id + " request failed");
+            return -1;
+        } else {
+            try {
+                //parse json
+                JSONArray jsonArray = new JSONArray(resp);
+
+                //convert id(int) to unicode code string
+                String s = "" + id;
+                String re = "";
+                for (int j = 0; j < s.length(); j++){
+                    re += String.format("%%u%04x",Character.codePointAt(s, j));
+                }
+
+                //find target id
+                for (Object o : jsonArray) {
+                    if (((JSONObject) o).getString("Whir_Mem_Member_PID").equals(re)) {
+                        String pm = ((JSONObject) o).getString("pm");
+                        return Integer.parseInt(pm.replaceAll("%u003",""));
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            //if no target
+            return -1;
+        }
     }
 }

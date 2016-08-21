@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HackVote</title>
+</head>
+<body>
+<div id="state">
+
+</div>
+<p id="run_state">
+
+</p>
+
+<script language="JavaScript">
+    function httpGet(theUrl, timeout_callback, ok_callback)
+    {
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.open( "GET", theUrl, true );
+        xmlHttp.timeout = 40 * 1000;
+        xmlHttp.ontimeout = function () { timeout_callback(); };
+        xmlHttp.onreadystatechange = function() {
+            if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                ok_callback(xmlHttp.responseText);
+        };
+        xmlHttp.send( null );
+        return xmlHttp.responseText;
+    }
+
+    var state_div=document.getElementById("state");
+    var states=["id","vote","rank","time","speed","thread","run-state","vote-state"];
+
+    var id;
+
+    for (id in states){
+        var p = document.createElement("p");
+        p.innerHTML=states[id] + ":";
+
+        var span = document.createElement("span");
+        span.id=states[id];
+        p.appendChild(span);
+        state_div.appendChild(p);
+    }
+
+    function get_state() {
+        var i = states.length;
+        document.getElementById("run_state").innerHTML = "getting...(" + i + ")";
+        function test_end () {
+            document.getElementById("run_state").innerHTML = "getting...(" + i + ")";
+            if (i === 0){
+                document.getElementById("run_state").innerHTML = "done"
+            }
+        }
+        for (id in states) {
+            (function () {
+                var str = states[id];
+                httpGet(document.URL + "/" + states[id], function () {
+                    document.getElementById(str).innerHTML = "timeout";
+                    i--;
+                    test_end();
+                }, function (x) {
+                    document.getElementById(str).innerHTML = x;
+                    i--;
+                    test_end();
+                });
+            })();
+        }
+    }
+
+    get_state();
+    setInterval(get_state, 60 * 1000);
+</script>
+</body>
+</html>
