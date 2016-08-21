@@ -18,7 +18,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 
 public class HackZXB extends HackVote {
-    private int rank = 0;
+    private int rank = -1;
 
     @Override
     protected boolean voteOnce(int id) {
@@ -75,6 +75,13 @@ public class HackZXB extends HackVote {
 
     @Override
     protected long getVote(int id) {
+        //if no id
+        if (id == 0){
+            rank = -1;
+            return -1;
+        }
+
+        //send http post
         HttpClient httpClient = HttpClients.createDefault();
         HttpPost httpPost = new HttpPost("http://a.ajmide.com/api.php?plugin=vote&action=getVoteList&pp_id=478");
         final int TIMEOUTMS = 15 * 1000;
@@ -93,21 +100,28 @@ public class HackZXB extends HackVote {
         } catch (Exception e) {
             Utils.log("request error");
         }
+
+        //analyze response
         if (resp == null) {
             Utils.log("vote " + id + " request failed");
-            rank = 0;
+            rank = -1;
             return -1;
         } else {
+            //parse json
             JSONArray jsonArray = new JSONObject(resp).getJSONObject("data").getJSONArray("vote-item");
             if (jsonArray == null) return -1;
-            rank = 0;
+
+            //find target
+            rank = -1;
             for (Object o : jsonArray) {
                 rank++;
                 if (((JSONObject) o).getInt("id") == id) {
                     return ((JSONObject) o).getInt("voteCount");
                 }
             }
-            rank = 0;
+
+            //if no target
+            rank = -1;
             return -1;
         }
     }
