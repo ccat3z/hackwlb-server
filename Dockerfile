@@ -5,6 +5,7 @@ EXPOSE 80
 
 #add testing repo
 RUN cat /etc/apk/repositories | sed -n "/main$/{s/^/@testing /;s/v[0-9\.]*/edge/;s/main$/testing/p}" >> /etc/apk/repositories
+RUN cat /etc/apk/repositories | sed -n "/main$/{s/^/@edge /;s/v[0-9\.]*/edge/;s/main$/community/p}" >> /etc/apk/repositories
 
 #update repo
 RUN apk update
@@ -15,7 +16,7 @@ ENV PATH $PATH:/usr/lib/jvm/java-1.8-openjdk/jre/bin:/usr/lib/jvm/java-1.8-openj
 RUN apk add --no-cache openjdk8
 
 #install maven
-RUN apk add --no-cache maven@testing
+RUN apk add --no-cache maven@edge
 
 #build
 COPY . /usr/src
