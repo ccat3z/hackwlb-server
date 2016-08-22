@@ -1,72 +1,63 @@
 package com.c0ldcat;
 
-import com.c0ldcat.tasks.HackWLB;
-import com.c0ldcat.tasks.HackZXB;
+import com.c0ldcat.utils.HackTask;
 import com.c0ldcat.utils.Utils;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
+import fi.iki.elonen.NanoHTTPD;
+import fi.iki.elonen.util.ServerRunner;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.HashMap;
 
-public class HackWLBServer {
+public class HackWLBServer extends NanoHTTPD{
+    HashMap<String, HackTask> taskMap;
 
     public static void main(String[] args) {
+        HackWLBServer s;
         if (args.length != 2) {
-            new HackWLBServer("0.0.0.0",1234);
+            s = new HackWLBServer("0.0.0.0",1234);
         } else {
-            new HackWLBServer(args[0],Integer.parseInt(args[1]));
+            s = new HackWLBServer(args[0],Integer.parseInt(args[1]));
         }
+        ServerRunner.executeInstance(s);
     }
 
-    public HackWLBServer(String serv, int port) {
-        InetSocketAddress address = new InetSocketAddress(serv, port);
-        IndexHandler indexHandler = new IndexHandler();
-        indexHandler.addHackTask("wlb", new HackWLB());
-        indexHandler.addHackTask("zxb", new HackZXB());
-        try {
-            HttpServer server = HttpServer.create(address, 5);
-            server.createContext("/", indexHandler);
-            server.setExecutor(null);
-            server.start();
-            System.out.println("server started at " + serv + ":" + port);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public HackWLBServer(String host, int port) {
+        //create server
+        super(host,port);
+        Utils.log("Server will start on " + host + ":" + port + ".", false);
+
+        //init
+        taskMap = new HashMap<>();
     }
 
-    private class IndexHandler implements HttpHandler {
-        HashMap<String, HttpHandler> httpHandlers;
+    public boolean isKey(String tag) {
+        return taskMap.containsKey(tag);
+    }
 
-        public IndexHandler() {
-            httpHandlers = new HashMap<>();
-        }
+    @Override
+    public Response serve(IHTTPSession session) {
+        //get host and path
+        String host = session.getHeaders().get("host");
+        String path = session.getUri();
 
-        public void addHackTask(String tag, HttpHandler httpHandler) {
-            httpHandlers.put(tag, httpHandler);
-        }
+        //add '/' at the end of path
+        if (path.charAt(path.length() - 1) != '/')
+            path += '/';
 
-        @Override
-        public void handle(HttpExchange httpExchange) throws IOException {
-            String host = httpExchange.getRequestHeaders().get("Host").get(0);
-            String fullPath[] = httpExchange.getRequestURI().getPath().split("/");
-            if (fullPath.length != 0) {
-                String tag = fullPath[1];
-                if (httpHandlers.containsKey(tag)){
-                    httpHandlers.get(tag).handle(httpExchange);
-                    return;
-                }
+        //if the first path is tag
+        for (String tag : taskMap.keySet()){
+            if (path.indexOf("/abc/") == 0){
+                return taskMap.get("tag").handle(session);
             }
-            if (host.contains(".")) {
-                String tag = host.split("\\.")[0];
-                if (httpHandlers.containsKey(tag)) {
-                    httpHandlers.get(tag).handle(httpExchange);
-                    return;
-                }
-            }
-            Utils.httpResp("Welcome c0ldcat's website", httpExchange);
         }
+
+        //if host contain tag
+        if (host.contains(".")) {
+            String tag = host.split("\\.")[0];
+            if (taskMap.containsKey(tag)) {
+                return taskMap.get(tag).handle(session);
+            }
+        }
+        session.ge
+        return newChunkedResponse(Response.Status.OK, "text/html", getClass().getResourceAsStream("/index.html"));
     }
 }

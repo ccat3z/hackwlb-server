@@ -59,7 +59,11 @@ public class Utils {
     }
 
     public static void log(String log){
-        System.out.println("[" + new Date() + "]" + log);
+        log(log, true);
+    }
+
+    public static void log(String log, boolean b){
+        System.out.println( (b ? "[" + new Date() + "]" : "") + log);
     }
 
     public static void httpResp(String resp, HttpExchange httpExchange) throws IOException {

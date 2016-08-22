@@ -2,11 +2,12 @@ package com.c0ldcat.utils;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import fi.iki.elonen.NanoHTTPD;
 
 import java.io.IOException;
 import java.util.HashMap;
 
-public class HackVote implements Runnable, HttpHandler{
+public class HackVote implements Runnable, HackTask{
     private boolean run = false;
     private int id = 0;
     private int time = 0;
@@ -82,6 +83,20 @@ public class HackVote implements Runnable, HttpHandler{
                 Utils.httpResp(state, httpExchange);
             }
         });
+    }
+
+    @Override
+    public NanoHTTPD.Response handle(NanoHTTPD.IHTTPSession session) {
+        String fullPath[] = httpExchange.getRequestURI().getPath().split("/");
+        if (fullPath.length != 0) {
+            String action = fullPath[fullPath.length - 1];
+            if (actionMap.containsKey(action)) {
+                actionMap.get(action).handle(httpExchange);
+                return;
+            }
+        }
+        Utils.httpRespHtml(Utils.getStringFromInputStream(getClass().getResourceAsStream("/HackVoteState.html")), httpExchange);
+        return null;
     }
 
     @Override
