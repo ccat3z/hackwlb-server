@@ -12,13 +12,14 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 public class HackWLB extends HackVote {
     @Override
@@ -115,9 +116,11 @@ public class HackWLB extends HackVote {
             return -1;
         }
 
+        final int fid = id;
+
         //send http post
         HttpClient httpClient = HttpClients.createDefault();
-        HttpPost httpPost = new HttpPost("http://weilaibei.smartstudy.com/Ajax/GetPm.aspx");
+        final HttpPost httpPost = new HttpPost("http://weilaibei.smartstudy.com/Ajax/GetPm.aspx");
         final int TIMEOUTMS = 30 * 1000;
         RequestConfig requestConfig = RequestConfig.custom().setConnectionRequestTimeout(TIMEOUTMS).setConnectTimeout(TIMEOUTMS).setSocketTimeout(TIMEOUTMS).build();
         httpPost.setConfig(requestConfig);
@@ -128,7 +131,40 @@ public class HackWLB extends HackVote {
             resp = httpClient.execute(httpPost, new ResponseHandler<String>() {
                 @Override
                 public String handleResponse(HttpResponse httpResponse) throws ClientProtocolException, IOException {
-                    return Utils.getStringFromInputStream(httpResponse.getEntity().getContent());
+                    String resp = "-1";
+                    InputStream is = httpResponse.getEntity().getContent();
+                    InputStreamReader isr = new InputStreamReader(is);
+                    int b;
+                    while ((b = isr.read()) != -1){
+                        char c = (char) b;
+
+                        if (c == '{') { //JSONObject start
+                            String json = "{"; //create json string
+                            while((c = (char) isr.read()) != '}') { //not end
+                                json += c;
+                            }
+                            json += '}'; //add end
+
+                            //parse json
+                            JSONObject jsonObject = new JSONObject(json);
+
+                            //convert id(int) to unicode code string
+                            String s = "" + fid;
+                            String re = "";
+                            for (int j = 0; j < s.length(); j++){
+                                re += String.format("%%u%04x",Character.codePointAt(s, j));
+                            }
+
+                            //if get
+                            if (jsonObject.getString("Whir_Mem_Member_PID").equals(re)) {
+                                String pm = jsonObject.getString("pm");
+                                resp = pm.replaceAll("%u003","");
+                                break;
+                            }
+                        }
+                    }
+                    httpPost.abort();
+                    return resp;
                 }
             });
         } catch (Exception e) {
@@ -141,30 +177,7 @@ public class HackWLB extends HackVote {
             Utils.log("rank " + id + " request failed");
             return -1;
         } else {
-            try {
-                //parse json
-                JSONArray jsonArray = new JSONArray(resp);
-
-                //convert id(int) to unicode code string
-                String s = "" + id;
-                String re = "";
-                for (int j = 0; j < s.length(); j++){
-                    re += String.format("%%u%04x",Character.codePointAt(s, j));
-                }
-
-                //find target id
-                for (Object o : jsonArray) {
-                    if (((JSONObject) o).getString("Whir_Mem_Member_PID").equals(re)) {
-                        String pm = ((JSONObject) o).getString("pm");
-                        return Integer.parseInt(pm.replaceAll("%u003",""));
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            //if no target
-            return -1;
+            return Integer.parseInt(resp);
         }
     }
 }
