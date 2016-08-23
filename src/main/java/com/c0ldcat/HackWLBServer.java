@@ -6,21 +6,21 @@ import com.c0ldcat.utils.HackTask;
 import com.c0ldcat.utils.TaskHelper;
 import com.c0ldcat.utils.Utils;
 import fi.iki.elonen.NanoHTTPD;
-import fi.iki.elonen.util.ServerRunner;
 
 import java.util.HashMap;
 
 public class HackWLBServer extends NanoHTTPD{
     HashMap<String, HackTask> taskMap;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception{
         HackWLBServer s;
         if (args.length != 2) {
             s = new HackWLBServer("0.0.0.0",1234);
         } else {
             s = new HackWLBServer(args[0],Integer.parseInt(args[1]));
         }
-        ServerRunner.executeInstance(s);
+        s.start();
+        while (true);
     }
 
     public HackWLBServer(String host, int port) {
