@@ -116,7 +116,8 @@ public class HackZXB extends HackVote {
             for (Object o : jsonArray) {
                 rank++;
                 if (((JSONObject) o).getInt("id") == id) {
-                    return ((JSONObject) o).getInt("voteCount") + 1;
+                    rank++;
+                    return ((JSONObject) o).getInt("voteCount");
                 }
             }
 
