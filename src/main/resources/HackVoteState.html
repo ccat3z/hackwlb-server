@@ -57,7 +57,7 @@
         for (id in states) {
             (function () {
                 var str = states[id];
-                var url = document.URL.replace(/\/$/,"") + "/" + states[id];
+                var url = "BASE_PATH".replace(/\/$/,"") + "/" + states[id];
                 httpGet(url, function () {
                     document.getElementById(str).innerHTML = "timeout";
                     i--;

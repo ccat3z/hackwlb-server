@@ -1,11 +1,10 @@
 package com.c0ldcat.utils;
 
-import com.sun.net.httpserver.HttpExchange;
+import fi.iki.elonen.NanoHTTPD;
+import fi.iki.elonen.NanoHTTPD.Response;
 import j2html.tags.Tag;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 import static j2html.TagCreator.*;
@@ -14,11 +13,11 @@ public class EnterPage {
     static final public String TYPE_TEXT = "text";
     static final public String TYPE_PASSWD = "password";
 
-    private HttpExchange httpExchange;
+    private TaskHelper th;
     private ArrayList<Tag> inputTags;
 
-    public EnterPage(HttpExchange httpExchange) {
-        this.httpExchange = httpExchange;
+    public EnterPage(TaskHelper th) {
+        this.th = th;
         inputTags = new ArrayList<>();
     }
 
@@ -39,23 +38,19 @@ public class EnterPage {
         return add(type, name, "");
     }
 
-    public EnterPage add(HashMap<String, String> map) {
+    public EnterPage add(Map<String, String> map) {
         String type = TYPE_TEXT;
         for (Map.Entry<String, String> entry : map.entrySet()) {
-            if (entry.getKey().equals(Password.PAR_PASS)) {
-                type = TYPE_PASSWD;
-            } else {
-                type = TYPE_TEXT;
-            }
             add(type, entry.getKey(), entry.getValue());
         }
         return this;
     }
 
-    public void push() throws IOException{
+    public Response getResponse() {
         String resp = Utils.getStringFromInputStream(getClass().getResourceAsStream("/EnterPage.html"))
                 .replaceAll("FORM_PART",
-                        form().withAction(httpExchange.getRequestURI().getPath()).withMethod("GET")
+                        form().withAction(th.getRealPath())
+                                .withMethod("GET")
                                 .with(inputTags)
                                 .with(
                                         input().withId("submit")
@@ -63,6 +58,6 @@ public class EnterPage {
                                                 .withType("submit")
                                                 .withValue("Submit")
                                 ).toString());
-        Utils.httpRespHtml(resp, httpExchange);
+        return NanoHTTPD.newFixedLengthResponse(resp);
     }
 }

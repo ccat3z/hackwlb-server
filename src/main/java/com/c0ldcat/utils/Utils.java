@@ -1,9 +1,9 @@
 package com.c0ldcat.utils;
 
-import com.sun.net.httpserver.HttpExchange;
-
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.Random;
 
@@ -42,6 +42,9 @@ public class Utils {
         try {
             br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
             while ((line = br.readLine()) != null) {
+                if (sb.length() != 0) {
+                    sb.append("\n");
+                }
                 sb.append(line);
             }
         } catch (IOException e) {
@@ -64,34 +67,5 @@ public class Utils {
 
     public static void log(String log, boolean b){
         System.out.println( (b ? "[" + new Date() + "]" : "") + log);
-    }
-
-    public static void httpResp(String resp, HttpExchange httpExchange) throws IOException {
-        httpExchange.sendResponseHeaders(200, resp.length());
-        OutputStream os = httpExchange.getResponseBody();
-        os.write(resp.getBytes());
-        os.flush();
-        os.close();
-    }
-
-    public static void httpResp(boolean resp, HttpExchange httpExchange) throws IOException {
-        httpResp("" + resp, httpExchange);
-    }
-
-    public static void httpResp(int resp, HttpExchange httpExchange) throws IOException {
-        httpResp("" + resp, httpExchange);
-    }
-
-    public static void httpResp(long resp, HttpExchange httpExchange) throws IOException {
-        httpResp("" + resp, httpExchange);
-    }
-
-    public static void httpRespHtml(String resp, HttpExchange httpExchange) throws IOException {
-        httpExchange.getResponseHeaders().add("Content-Type","text/html; charset=utf-8");
-        httpExchange.sendResponseHeaders(200, resp.getBytes(StandardCharsets.UTF_8).length);
-        OutputStream os = httpExchange.getResponseBody();
-        os.write(resp.getBytes(StandardCharsets.UTF_8));
-        os.flush();
-        os.close();
     }
 }

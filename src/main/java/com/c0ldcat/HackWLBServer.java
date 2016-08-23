@@ -1,6 +1,9 @@
 package com.c0ldcat;
 
+import com.c0ldcat.tasks.HackWLB;
+import com.c0ldcat.tasks.HackZXB;
 import com.c0ldcat.utils.HackTask;
+import com.c0ldcat.utils.TaskHelper;
 import com.c0ldcat.utils.Utils;
 import fi.iki.elonen.NanoHTTPD;
 import fi.iki.elonen.util.ServerRunner;
@@ -27,6 +30,8 @@ public class HackWLBServer extends NanoHTTPD{
 
         //init
         taskMap = new HashMap<>();
+        taskMap.put("wlb", new HackWLB());
+        taskMap.put("zxb", new HackZXB());
     }
 
     public boolean isKey(String tag) {
@@ -43,10 +48,14 @@ public class HackWLBServer extends NanoHTTPD{
         if (path.charAt(path.length() - 1) != '/')
             path += '/';
 
+        //create TaskHelper
+        TaskHelper th = new TaskHelper(session);
+
         //if the first path is tag
         for (String tag : taskMap.keySet()){
-            if (path.indexOf("/abc/") == 0){
-                return taskMap.get("tag").handle(session);
+            if (path.startsWith("/" + tag + "/")){
+                th.setPath(1);
+                return taskMap.get(tag).handle(th);
             }
         }
 
@@ -54,10 +63,11 @@ public class HackWLBServer extends NanoHTTPD{
         if (host.contains(".")) {
             String tag = host.split("\\.")[0];
             if (taskMap.containsKey(tag)) {
-                return taskMap.get(tag).handle(session);
+                return taskMap.get(tag).handle(th);
             }
         }
-        session.ge
+
+        //no tag, return index page
         return newChunkedResponse(Response.Status.OK, "text/html", getClass().getResourceAsStream("/index.html"));
     }
 }

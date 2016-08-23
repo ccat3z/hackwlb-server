@@ -1,11 +1,10 @@
 package com.c0ldcat.utils;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import fi.iki.elonen.NanoHTTPD;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class HackVote implements Runnable, HackTask{
     private boolean run = false;
@@ -16,7 +15,7 @@ public class HackVote implements Runnable, HackTask{
     private Thread speedTestThread;
     private int thread;
     private int delay;
-    private HashMap<String, HttpHandler> actionMap;
+    private HashMap<String, HackTask> actionMap;
 
     final static private String ACTION_START = "start";
     final static private String ACTION_STOP = "stop";
@@ -38,78 +37,65 @@ public class HackVote implements Runnable, HackTask{
         actionMap.put(ACTION_START, new StartHandler());
         actionMap.put(ACTION_STOP, new StopHandler());
 
-        actionMap.put(ACTION_ID, new HttpHandler() {
+        actionMap.put(ACTION_ID, new HackTask() {
             @Override
-            public void handle(HttpExchange httpExchange) throws IOException {
-                Utils.httpResp(id, httpExchange);
+            public NanoHTTPD.Response handle(TaskHelper th) {
+                return NanoHTTPD.newFixedLengthResponse("" + id);
             }
         });
         actionMap.put(ACTION_VOTE, new VoteHandler());
         actionMap.put(ACTION_RANK, new RankHandler());
 
-        actionMap.put(ACTION_TIME, new HttpHandler() {
+        actionMap.put(ACTION_TIME, new HackTask() {
             @Override
-            public void handle(HttpExchange httpExchange) throws IOException {
-                Utils.httpResp(time, httpExchange);
+            public NanoHTTPD.Response handle(TaskHelper th) {
+                return NanoHTTPD.newFixedLengthResponse("" + time);
             }
         });
-        actionMap.put(ACTION_SPEED, new HttpHandler() {
+        actionMap.put(ACTION_SPEED, new HackTask() {
             @Override
-            public void handle(HttpExchange httpExchange) throws IOException {
-                Utils.httpResp(speed, httpExchange);
+            public NanoHTTPD.Response handle(TaskHelper th) {
+                return NanoHTTPD.newFixedLengthResponse("" + speed);
             }
         });
-        actionMap.put(ACTION_THREAD, new HttpHandler() {
+        actionMap.put(ACTION_THREAD, new HackTask() {
             @Override
-            public void handle(HttpExchange httpExchange) throws IOException {
-                Utils.httpResp(thread, httpExchange);
+            public NanoHTTPD.Response handle(TaskHelper th) {
+                return NanoHTTPD.newFixedLengthResponse("" + thread);
             }
         });
-        actionMap.put(ACTION_DELAY, new HttpHandler() {
+        actionMap.put(ACTION_DELAY, new HackTask() {
             @Override
-            public void handle(HttpExchange httpExchange) throws IOException {
-                Utils.httpResp(delay, httpExchange);
+            public NanoHTTPD.Response handle(TaskHelper th) {
+                return NanoHTTPD.newFixedLengthResponse("" + delay);
             }
         });
-        actionMap.put(ACTION_RUN_STATE, new HttpHandler() {
+        actionMap.put(ACTION_RUN_STATE, new HackTask() {
             @Override
-            public void handle(HttpExchange httpExchange) throws IOException {
-                Utils.httpResp(run, httpExchange);
+            public NanoHTTPD.Response handle(TaskHelper th) {
+                return NanoHTTPD.newFixedLengthResponse("" + run);
             }
         });
-        actionMap.put(ACTION_VOTE_STATE, new HttpHandler() {
+        actionMap.put(ACTION_VOTE_STATE, new HackTask() {
             @Override
-            public void handle(HttpExchange httpExchange) throws IOException {
-                Utils.httpResp(state, httpExchange);
+            public NanoHTTPD.Response handle(TaskHelper th) {
+                return NanoHTTPD.newFixedLengthResponse("" + state);
             }
         });
     }
 
-    @Override
-    public NanoHTTPD.Response handle(NanoHTTPD.IHTTPSession session) {
-        String fullPath[] = httpExchange.getRequestURI().getPath().split("/");
-        if (fullPath.length != 0) {
-            String action = fullPath[fullPath.length - 1];
-            if (actionMap.containsKey(action)) {
-                actionMap.get(action).handle(httpExchange);
-                return;
-            }
-        }
-        Utils.httpRespHtml(Utils.getStringFromInputStream(getClass().getResourceAsStream("/HackVoteState.html")), httpExchange);
-        return null;
-    }
 
     @Override
-    public void handle(HttpExchange httpExchange) throws IOException {
-        String fullPath[] = httpExchange.getRequestURI().getPath().split("/");
-        if (fullPath.length != 0) {
-            String action = fullPath[fullPath.length - 1];
+    public NanoHTTPD.Response handle(TaskHelper th) {
+        ArrayList<String> path = th.getPath();
+        if (path.size() != 0) {
+            String action = path.get(0);
             if (actionMap.containsKey(action)) {
-                actionMap.get(action).handle(httpExchange);
-                return;
+                return actionMap.get(action).handle(th);
             }
         }
-        Utils.httpRespHtml(Utils.getStringFromInputStream(getClass().getResourceAsStream("/HackVoteState.html")), httpExchange);
+
+        return new StateHandler().handle(th);
     }
 
     @Override
@@ -181,27 +167,30 @@ public class HackVote implements Runnable, HackTask{
         }
     }
 
-    private class StartHandler implements HttpHandler {
+    private class StartHandler implements HackTask {
         @Override
-        public void handle(HttpExchange httpExchange) throws IOException {
-            HashMap<String, String> pars = UrlParameterParser.parse(httpExchange.getRequestURI().getQuery());
-            if (pars.containsKey("id") && pars.containsKey("time") && pars.containsKey("thread")){
+        public NanoHTTPD.Response handle(TaskHelper th) {
+            Map<String, String> pars = th.getParameters();
+            if (pars.containsKey("id")
+                    && pars.containsKey("time")
+                    && pars.containsKey("thread")
+                    && pars.containsKey("delay")){
                 try {
                     int id = Integer.parseInt(pars.get("id"));
                     int time = Integer.parseInt(pars.get("time"));
                     int thread = Integer.parseInt(pars.get("thread"));
                     int delay = Integer.parseInt(pars.get("delay"));
                     if (!run) {
-                        Utils.httpResp(true, httpExchange);
                         start(id, time, thread, delay);
+                        return NanoHTTPD.newFixedLengthResponse("true");
                     } else {
-                        Utils.httpResp(false, httpExchange);
+                        return NanoHTTPD.newFixedLengthResponse("false");
                     }
                 } catch (NumberFormatException e) {
-                    new EnterPage(httpExchange).add(pars).push();
+                    return new EnterPage(th).add(pars).getResponse();
                 }
             } else {
-                EnterPage enterPage = new EnterPage(httpExchange).add(pars);
+                EnterPage enterPage = new EnterPage(th).add(pars);
                 if(!pars.containsKey("id")){
                     enterPage.add(EnterPage.TYPE_TEXT, "id");
                 }
@@ -214,50 +203,59 @@ public class HackVote implements Runnable, HackTask{
                 if(!pars.containsKey("delay")){
                     enterPage.add(EnterPage.TYPE_TEXT, "delay", "0");
                 }
-                enterPage.push();
+                return enterPage.getResponse();
             }
         }
     }
 
-    private class StopHandler implements HttpHandler {
+    private class StopHandler implements HackTask {
         @Override
-        public void handle(HttpExchange httpExchange) throws IOException {
+        public NanoHTTPD.Response handle(TaskHelper th) {
             stop();
-            Utils.httpResp(true, httpExchange);
+            return NanoHTTPD.newFixedLengthResponse("true");
         }
     }
 
-    private class VoteHandler implements HttpHandler {
+    private class VoteHandler implements HackTask {
         @Override
-        public void handle(HttpExchange httpExchange) throws IOException {
-            HashMap<String, String> pars = UrlParameterParser.parse(httpExchange.getRequestURI().getQuery());
+        public NanoHTTPD.Response handle(TaskHelper th) {
+            Map<String, String> pars = th.getParameters();
             if (pars.containsKey("id")){
                 try {
                     int id = Integer.parseInt(pars.get("id"));
-                    Utils.httpResp(getVote(id), httpExchange);
+                    return NanoHTTPD.newFixedLengthResponse("" + getVote(id));
                 } catch (NumberFormatException e) {
-                    new EnterPage(httpExchange).add(pars).push();
+                    return NanoHTTPD.newFixedLengthResponse("wrong parameter");
                 }
             } else {
-                Utils.httpResp(getVote(id), httpExchange);
+                return NanoHTTPD.newFixedLengthResponse("" + getVote(id));
             }
         }
     }
 
-    private class RankHandler implements HttpHandler {
+    private class RankHandler implements HackTask {
         @Override
-        public void handle(HttpExchange httpExchange) throws IOException {
-            HashMap<String, String> pars = UrlParameterParser.parse(httpExchange.getRequestURI().getQuery());
+        public NanoHTTPD.Response handle(TaskHelper th) {
+            Map<String, String> pars = th.getParameters();
             if (pars.containsKey("id")){
                 try {
                     int id = Integer.parseInt(pars.get("id"));
-                    Utils.httpResp(getRank(id), httpExchange);
+                    return NanoHTTPD.newFixedLengthResponse("" + getRank(id));
                 } catch (NumberFormatException e) {
-                    new EnterPage(httpExchange).add(pars).push();
+                    return NanoHTTPD.newFixedLengthResponse("wrong parameter");
                 }
             } else {
-                Utils.httpResp(getRank(id), httpExchange);
+                return NanoHTTPD.newFixedLengthResponse("" + getRank(id));
             }
+        }
+    }
+
+    private class StateHandler implements HackTask {
+        @Override
+        public NanoHTTPD.Response handle(TaskHelper th) {
+            String resp = Utils.getStringFromInputStream(getClass().getResourceAsStream("/HackVoteState.html"))
+                    .replaceAll("BASE_PATH", th.getBasePath());
+            return NanoHTTPD.newFixedLengthResponse(resp);
         }
     }
 }

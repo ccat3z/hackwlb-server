@@ -95,7 +95,7 @@ public class HackWLB extends HackVote {
             Utils.log("request error");
         }
         if(resp == null){
-            Utils.log("vote " + id + " request failed");
+            Utils.log("get vote " + id + " request failed");
             return -1;
         } else {
             Document doc = Jsoup.parse(resp);
