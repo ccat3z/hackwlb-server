@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HackNeteaseMusic</title>
+</head>
+<body>
+<div>
+    <form name="form">
+        <p><span>id:</span><input type="text" name="id"></p>
+        <input id="submit" type="button" value="提交">
+    </form>
+</div>
+<p><a id="url">下载地址</a></p>
+<script language="JavaScript">
+    function httpGet(theUrl, timeout_callback, ok_callback)
+    {
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.open( "GET", theUrl, true );
+        xmlHttp.timeout = 40 * 1000;
+        xmlHttp.ontimeout = function () { timeout_callback(); };
+        xmlHttp.onreadystatechange = function() {
+            if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                ok_callback(xmlHttp.responseText);
+        };
+        xmlHttp.send( null );
+        return xmlHttp.responseText;
+    }
+
+    function getUrl() {
+        var url = "BASE_PATH".replace(/\/$/,"") + "/get?id=" + document.forms["form"]["id"].value;
+        httpGet(url, null, (function (url) {
+            if (url == "null") {
+                document.getElementById("url").removeAttribute("href");
+            } else {
+                document.getElementById("url").setAttribute("href", url);
+            }
+        }))
+    }
+
+    document.getElementById("submit").onclick = function () {
+        getUrl();
+    };
+</script>
+</body>
+</html>

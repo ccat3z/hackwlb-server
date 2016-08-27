@@ -1,5 +1,6 @@
 package com.c0ldcat;
 
+import com.c0ldcat.tasks.HackNeteaseMusic;
 import com.c0ldcat.tasks.HackWLB;
 import com.c0ldcat.tasks.HackZXB;
 import com.c0ldcat.utils.HackTask;
@@ -32,6 +33,7 @@ public class HackWLBServer extends NanoHTTPD{
         taskMap = new HashMap<>();
         taskMap.put("wlb", new HackWLB());
         taskMap.put("zxb", new HackZXB());
+        taskMap.put("nmg", new HackNeteaseMusic());
     }
 
     public boolean isKey(String tag) {
