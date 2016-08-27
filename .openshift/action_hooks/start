@@ -1,4 +1,5 @@
 #!/bin/bash
+export NMG_CONFIG="$OPENSHIFT_DATA_DIR/.nmg-config"
 nohup java -jar $OPENSHIFT_REPO_DIR/server.jar $OPENSHIFT_DIY_IP $OPENSHIFT_DIY_PORT |& /usr/bin/logshifter -tag hackwlb &
 
 echo "Application started"
