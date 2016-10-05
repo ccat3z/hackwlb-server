@@ -8,9 +8,6 @@ RUN cat /etc/apk/repositories | sed -n "/main$/{s/^/@testing /;s/v[0-9\.]*/edge/
 RUN cat /etc/apk/repositories | sed -n "/main$/{s/^/@edge /;s/v[0-9\.]*/edge/;s/main$/community/p}" >> /etc/apk/repositories
 RUN sed -i "s/v3\.4/latest-stable/" /etc/apk/repositories
 
-#update repo
-RUN apk update
-
 #install apache2 and php5
 RUN apk --no-cache add apache2 apache2-proxy php5-apache2 \
     && mkdir /run/apache2 \
@@ -25,12 +22,19 @@ RUN apk add --no-cache openjdk8
 #install maven
 RUN apk add --no-cache maven@edge
 
-#build
-COPY . /usr/src
-WORKDIR /usr/src
+#build java server
+ENV BUILD_DIR /tmp/src
+RUN mkdir -p $BUILD_dIR
+COPY pom.xml $BUILD_DIR/pom.xml
+COPY src $BUILD_DIR/src
+WORKDIR $BUILD_DIR
 RUN mvn package \
-    && cp target/hackwlb-server.jar /server.jar \
-    && cp apache-java-server.conf /etc/apache2/conf.d/java-server.conf \
-    && cp run.sh /run.sh
+    && cp target/hackwlb-server.jar /server.jar
+WORKDIR /
+RUN rm -rf $BUILD_DIR
+COPY apache-java-server.conf /etc/apache2/conf.d/java-server.conf
+
+#copy start script
+COPY run.sh /run.sh
 
 CMD /run.sh
