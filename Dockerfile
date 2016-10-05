@@ -24,7 +24,7 @@ RUN apk add --no-cache maven@edge
 
 #build java server
 ENV BUILD_DIR /tmp/src
-RUN mkdir -p $BUILD_dIR
+RUN mkdir -p $BUILD_DIR
 COPY pom.xml $BUILD_DIR/pom.xml
 COPY src $BUILD_DIR/src
 WORKDIR $BUILD_DIR
