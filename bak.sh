@@ -5,11 +5,7 @@ DIRS="/etc/owncloud /var/lib/owncloud/data /var/lib/mysql"
 
 pull() {
     if [ "${DATA_GIT_SSH}x" != "x" -a "${DATA_GIT_BRANCH}x" != "x" -a "${SSH_RSA}x" != "x" -a "${EMAIL}x" != "x" -a "${NAME}x" != "x" ];then
-        echo "DATA_GIT_SSH:${DATA_GIT_SSH}"
-        echo "DATA_GIT_BRANCH:${DATA_GIT_BRANCH}"
-        echo "SSH_RSA:${SSH_RSA}"
-        echo "EMAIL:${EMAIL}"
-        echo "NAME:${NAME}"
+        echo "Pull start"
 
         HOST=$(echo ${DATA_GIT_SSH} | sed "s/[^@]*@\([^:]*\).*/\1/")
         
@@ -36,6 +32,8 @@ pull() {
         [ -f .chown ]&&sh ./.chown
 
         cd ${OLDPWD}
+
+        echo "Pull done"
     else
         echo "Read git repo info failed"
         return 1
@@ -44,11 +42,7 @@ pull() {
 
 push() {
     if [ "${DATA_GIT_SSH}x" != "x" -a "${DATA_GIT_BRANCH}x" != "x" -a "${SSH_RSA}x" != "x" -a "${EMAIL}x" != "x" -a "${NAME}x" != "x" ];then
-        echo "DATA_GIT_SSH:${DATA_GIT_SSH}"
-        echo "DATA_GIT_BRANCH:${DATA_GIT_BRANCH}"
-        echo "SSH_RSA:${SSH_RSA}"
-        echo "EMAIL:${EMAIL}"
-        echo "NAME:${NAME}"
+        echo "Push start"
 
         HOST=$(echo ${DATA_GIT_SSH} | sed "s/[^@]*@\([^:]*\).*/\1/")
         
@@ -84,6 +78,8 @@ push() {
         git add .
         git commit -m "$(date)"
         git push origin ${DATA_GIT_BRANCH} -f
+
+        echo "Push done"
 
         cd $OLDPWD
     else
