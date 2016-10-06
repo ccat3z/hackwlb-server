@@ -83,7 +83,15 @@ push() {
         git commit -m "$(date)"
 
         echo "Pushing"
-        git push origin ${DATA_GIT_BRANCH} -f
+        git push origin ${DATA_GIT_BRANCH} -f &
+
+        PID=$!                                                                                                                               
+        if [ "${GIT_PUSH_TIMEOUT}x" = "x" ];then                                                                                             
+            sleep 10s                                                                                                                             
+        else                                                                                                                                 
+            sleep ${GIT_PUSH_TIMEOUT}                                                                                                            
+        fi                                                                                                                                   
+        kill $PID 
 
         echo "Push done"
 
