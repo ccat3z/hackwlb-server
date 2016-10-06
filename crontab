@@ -1,2 +1,2 @@
-1   *   *   *   *   /bak.sh push >> /tmp/cronlog
+45   *   *   *   *   /bak.sh push >> /tmp/cronlog
 *   *   *   *   *   date >> /tmp/cronlog

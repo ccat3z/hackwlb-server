@@ -74,7 +74,6 @@ push() {
             do
                 FILE=$(echo ${FILE} | sed "s|_FLAG_SPACE__| |g")
                 stat -c "[ ! -d '%n' -a ! -f '%n' ]&&mkdir %n; chmod %a '%n'; chown %U:%G '%n'" "${FILE}"
-                echo ${FILE}
             done
         } > .chown 
 
