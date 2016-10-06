@@ -28,6 +28,9 @@ RUN apk add --no-cache openjdk8
 #install maven
 RUN apk add --no-cache maven@edge
 
+#install cron
+RUN apk --no-cache add dcron
+
 #build java server
 ENV BUILD_DIR /tmp/src
 RUN mkdir -p $BUILD_DIR
@@ -51,6 +54,9 @@ RUN ./init-mysql.sh && rm init-mysql.sh
 #init owncloud script
 COPY owncloud.sh owncloud.sh
 RUN ./owncloud.sh && rm owncloud.sh
+
+#install crontab
+COPY crontab /etc/crontabs/root
 
 #install launch scripts
 COPY bak.sh /bak.sh
