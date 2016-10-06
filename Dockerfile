@@ -55,6 +55,9 @@ RUN ./init-mysql.sh && rm init-mysql.sh
 COPY owncloud.sh owncloud.sh
 RUN ./owncloud.sh && rm owncloud.sh
 
+#config git
+RUN git config --global pack.windowMemory 32m
+
 #install crontab
 COPY crontab /etc/crontabs/root
 
