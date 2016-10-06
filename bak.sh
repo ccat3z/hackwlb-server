@@ -67,16 +67,23 @@ push() {
             exit 1
         fi
 
+        echo "Reading file info"
+
         {
             for FILE in $(find -name "*" | sed "s|^\./||;/^\.git/d;s| |_FLAG_SPACE__|g")
             do
                 FILE=$(echo ${FILE} | sed "s|_FLAG_SPACE__| |g")
                 stat -c "[ ! -d '%n' -a ! -f '%n' ]&&mkdir %n; chmod %a '%n'; chown %U:%G '%n'" "${FILE}"
+                echo ${FILE}
             done
         } > .chown 
 
+        echo "Create git commit"
+
         git add .
         git commit -m "$(date)"
+
+        echo "Pushing"
         git push origin ${DATA_GIT_BRANCH} -f
 
         echo "Push done"
