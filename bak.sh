@@ -73,7 +73,7 @@ push() {
             for FILE in $(find -name "*" | sed "s|^\./||;/^\.git/d;s| |_FLAG_SPACE__|g")
             do
                 FILE=$(echo ${FILE} | sed "s|_FLAG_SPACE__| |g")
-                stat -c "[ ! -d '%n' -a ! -f '%n' ]&&mkdir %n; chmod %a '%n'; chown %U:%G '%n'" "${FILE}"
+                stat -c "[ ! -d '%n' -a ! -f '%n' ]&&mkdir '%n'; chmod %a '%n'; chown %U:%G '%n'" "${FILE}"
             done
         } > .chown 
 
