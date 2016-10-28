@@ -15,7 +15,7 @@ RUN apk --no-cache add apache2 apache2-proxy php5-apache2 mysql-client \
     && sed -i "s/^\([^#].*mod_proxy_fdpass.*.so\)$/#\1/" /etc/apache2/conf.d/proxy.conf
 
 #install core utils
-RUN apk --no-cache add git openssh coreutils
+RUN apk --no-cache add git openssh coreutils bash
 
 #install owncloud
 RUN apk --no-cache add owncloud-mysql 

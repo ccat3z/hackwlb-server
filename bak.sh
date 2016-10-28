@@ -29,7 +29,7 @@ pull() {
         git remote add origin ${DATA_GIT_SSH}
         git pull origin ${DATA_GIT_BRANCH}
 
-        [ -f .chown ]&&sh ./.chown
+        [ -f .chown ]&&bash ./.chown
 
         cd ${OLDPWD}
 
