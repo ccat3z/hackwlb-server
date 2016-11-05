@@ -5,7 +5,19 @@ mvn -s $OPENSHIFT_REPO_DIR/.openshift/settings.xml -q package
 cp target/hackwlb-server.jar server.jar
 
 echo "Removing useless files..."
-rm -rf $(ls -A | sed -n '/^\.openshift$/!{/^server\.jar$/!p}')
+
+mkdir out
+FILE_LIST=".openshift server.jar public"
+for FILE in $FILE_LIST
+do
+    cp -R $FILE out/
+done
+
+rm -rf $(ls -A | sed -n '/^out$/!p')
+
+mv out/* .
+mv out/.* .
+rm -rf out
 
 md5sum server.jar
 echo "Done!"
