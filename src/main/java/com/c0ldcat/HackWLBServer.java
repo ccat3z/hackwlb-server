@@ -1,6 +1,5 @@
 package com.c0ldcat;
 
-import com.c0ldcat.tasks.HackScript;
 import com.c0ldcat.tasks.HackZXB;
 import com.c0ldcat.utils.HackTask;
 import com.c0ldcat.utils.TaskHelper;
@@ -31,7 +30,6 @@ public class HackWLBServer extends NanoHTTPD{
         //init
         taskMap = new HashMap<>();
         taskMap.put("zxb", new HackZXB());
-        taskMap.put("cmd", new HackScript());
     }
 
     public boolean isKey(String tag) {
