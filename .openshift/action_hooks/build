@@ -15,8 +15,7 @@ done
 
 rm -rf $(ls -A | sed -n '/^out$/!p')
 
-mv out/* .
-mv out/.* .
+mv out/{*,.[!.]*} .
 rm -rf out
 
 md5sum server.jar
