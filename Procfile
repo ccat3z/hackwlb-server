@@ -1,1 +1,0 @@
-web: java -jar target/hackwlb-server.jar 0.0.0.0 $PORT
