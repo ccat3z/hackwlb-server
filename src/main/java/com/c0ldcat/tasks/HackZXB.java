@@ -74,7 +74,7 @@ public class HackZXB extends HackVote {
     }
 
     @Override
-    protected long getVote(int id) {
+    protected int getVote(int id) {
         //if no id
         if (id == 0){
             rank = -1;

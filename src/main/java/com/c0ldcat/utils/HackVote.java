@@ -9,6 +9,7 @@ import java.util.Map;
 public class HackVote implements Runnable, HackTask{
     private boolean run = false;
     private int id = 0;
+    private int attackId = 0;
     private int time = 0;
     private boolean state = false;
     private int speed = 0;
@@ -18,6 +19,7 @@ public class HackVote implements Runnable, HackTask{
     private HashMap<String, HackTask> actionMap;
 
     final static private String ACTION_START = "start";
+    final static private String ACTION_ATTACK = "attack";
     final static private String ACTION_STOP = "stop";
 
     final static private String ACTION_ID = "id";
@@ -35,6 +37,7 @@ public class HackVote implements Runnable, HackTask{
         actionMap = new HashMap<>();
 
         actionMap.put(ACTION_START, new StartHandler());
+        actionMap.put(ACTION_ATTACK, new AttackHandler());
         actionMap.put(ACTION_STOP, new StopHandler());
 
         actionMap.put(ACTION_ID, new HackTask() {
@@ -133,6 +136,14 @@ public class HackVote implements Runnable, HackTask{
         }
     }
 
+    public void attack(int id, int attackId, int thread, int delay){
+        this.attackId = attackId;
+        int delta = getVote(attackId) - getVote(id);
+        time = delta > 0 ? delta : 0;
+        start(id, time, thread, delay);
+        new Thread(new AttackModeTimeUpdater()).start();
+    }
+
     public void stop(){
         this.run = false;
     }
@@ -141,7 +152,7 @@ public class HackVote implements Runnable, HackTask{
         return false;
     }
 
-    protected long getVote(int id) {
+    protected int getVote(int id) {
         return 0;
     }
 
@@ -164,6 +175,28 @@ public class HackVote implements Runnable, HackTask{
             }
             speedTestThread = null;
             Utils.log("Speed Test Thread Stop");
+        }
+    }
+
+    private class AttackModeTimeUpdater implements Runnable {
+        @Override
+        public void run() {
+            Utils.log("Attack Mode Time Updater Thread Start");
+            while (run){
+                int attackVote = getVote(attackId);
+                int vote = getVote(id);
+                if ( attackVote > 0 && vote > 0) {
+                    int delta = attackVote - vote;
+                    time = delta > 0 ? delta : 0;
+                    try {
+                        Thread.sleep(1000);
+                    } catch (Exception e) {
+
+                    }
+                }
+            }
+            speedTestThread = null;
+            Utils.log("Attack Mode Time Updater Thread Stop");
         }
     }
 
@@ -196,6 +229,47 @@ public class HackVote implements Runnable, HackTask{
                 }
                 if(!pars.containsKey("time")){
                     enterPage.add(EnterPage.TYPE_TEXT, "time", "1000");
+                }
+                if(!pars.containsKey("thread")){
+                    enterPage.add(EnterPage.TYPE_TEXT, "thread", "10");
+                }
+                if(!pars.containsKey("delay")){
+                    enterPage.add(EnterPage.TYPE_TEXT, "delay", "0");
+                }
+                return enterPage.getResponse();
+            }
+        }
+    }
+
+    private class AttackHandler implements HackTask {
+        @Override
+        public NanoHTTPD.Response handle(TaskHelper th) {
+            Map<String, String> pars = th.getParameters();
+            if (pars.containsKey("id")
+                    && pars.containsKey("attack")
+                    && pars.containsKey("thread")
+                    && pars.containsKey("delay")){
+                try {
+                    int id = Integer.parseInt(pars.get("id"));
+                    int attack = Integer.parseInt(pars.get("attack"));
+                    int thread = Integer.parseInt(pars.get("thread"));
+                    int delay = Integer.parseInt(pars.get("delay"));
+                    if (!run) {
+                        attack(id, attack, thread, delay);
+                        return NanoHTTPD.newFixedLengthResponse("true");
+                    } else {
+                        return NanoHTTPD.newFixedLengthResponse("false");
+                    }
+                } catch (NumberFormatException e) {
+                    return new EnterPage(th).add(pars).getResponse();
+                }
+            } else {
+                EnterPage enterPage = new EnterPage(th).add(pars);
+                if(!pars.containsKey("id")){
+                    enterPage.add(EnterPage.TYPE_TEXT, "id");
+                }
+                if(!pars.containsKey("attack")){
+                    enterPage.add(EnterPage.TYPE_TEXT, "attack");
                 }
                 if(!pars.containsKey("thread")){
                     enterPage.add(EnterPage.TYPE_TEXT, "thread", "10");
