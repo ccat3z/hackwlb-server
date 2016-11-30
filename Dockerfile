@@ -8,17 +8,11 @@ RUN cat /etc/apk/repositories | sed -n "/main$/{s/^/@testing /;s/v[0-9\.]*/edge/
 RUN cat /etc/apk/repositories | sed -n "/main$/{s/^/@edge /;s/v[0-9\.]*/edge/;s/main$/community/p}" >> /etc/apk/repositories
 RUN sed -i "s/v3\.4/latest-stable/" /etc/apk/repositories
 
-#install apache2 php5 mysql
-RUN apk --no-cache add apache2 apache2-proxy php5-apache2 mysql-client \
-    && mkdir /run/apache2 \
-    && sed -i "s/#\(.*mod_slotmem_shm.*.so\)$/\1/" /etc/apache2/httpd.conf \
-    && sed -i "s/^\([^#].*mod_proxy_fdpass.*.so\)$/#\1/" /etc/apache2/conf.d/proxy.conf
-
 #install core utils
-RUN apk --no-cache add git openssh coreutils bash
+RUN apk --no-cache add coreutils bash
 
-#install owncloud
-RUN apk --no-cache add owncloud-mysql 
+#install apache2
+RUN apk --no-cache add apache2 apache2-proxy 
 
 #install openjdk8
 ENV JAVA_HOME /usr/lib/jvm/java-1.8-openjdk
@@ -27,9 +21,6 @@ RUN apk add --no-cache openjdk8
 
 #install maven
 RUN apk add --no-cache maven@edge
-
-#install cron
-RUN apk --no-cache add dcron
 
 #build java server
 ENV BUILD_DIR /tmp/src
@@ -43,26 +34,7 @@ WORKDIR /
 RUN rm -rf $BUILD_DIR
 COPY apache-java-server.conf /etc/apache2/conf.d/java-server.conf
 
-#cope data
-COPY DATA.tar.gz DATA.tar.gz
-RUN tar -zxf DATA.tar.gz -C / && rm DATA.tar.gz
-
-#init mysql script
-COPY init-mysql.sh init-mysql.sh
-RUN ./init-mysql.sh && rm init-mysql.sh
-
-#init owncloud script
-COPY owncloud.sh owncloud.sh
-RUN ./owncloud.sh && rm owncloud.sh
-
-#config git
-RUN git config --global pack.windowMemory 32m
-
-#install crontab
-COPY crontab /etc/crontabs/root
-
 #install launch scripts
-COPY bak.sh /bak.sh
 COPY run.sh /run.sh
 
 CMD /run.sh
