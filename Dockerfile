@@ -12,7 +12,9 @@ RUN sed -i "s/v3\.4/latest-stable/" /etc/apk/repositories
 RUN apk --no-cache add coreutils bash
 
 #install apache2
-RUN apk --no-cache add apache2 apache2-proxy 
+RUN apk --no-cache add apache2 apache2-proxy \
+    && mkdir /run/apache2 \
+    && sed -i "s/#\(.*mod_slotmem_shm.*.so\)$/\1/" /etc/apache2/httpd.conf
 
 #install openjdk8
 ENV JAVA_HOME /usr/lib/jvm/java-1.8-openjdk
