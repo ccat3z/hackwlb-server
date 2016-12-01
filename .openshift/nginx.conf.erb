@@ -30,8 +30,8 @@ server {
     listen  <%= ENV['OPENSHIFT_NGINX_IP'] %>:<%= ENV['OPENSHIFT_NGINX_PORT'] %>;
     root    <%= ENV['OPENSHIFT_REPO_DIR'] %>/public;
 
-    rewrite ^/blog(.*)$ http://blog.cn.c0ldcat.ml$1 permanent;
-    rewrite ^/$ http://blog.cn.c0ldcat.ml permanent;
+    rewrite ^/blog(.*)$ http://blog.c0ldcat.ml$1 permanent;
+    rewrite ^/$ http://blog.c0ldcat.ml permanent;
 
     location / {
         index  index.html index.htm;
