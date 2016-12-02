@@ -128,11 +128,11 @@ public class HackVote implements HackTask{
         }
     }
 
-    public void attack(int id, int attackId, int thread, int delay){
+    public void attack(int id, int attackId, int thread, int delay, int more){
         this.id = id;
         this.delay = delay;
         this.attackRun = true;
-        attackThread = new Thread(new Attacker(attackId, thread));
+        attackThread = new Thread(new Attacker(attackId, thread, more));
         attackThread.start();
     }
 
@@ -186,10 +186,12 @@ public class HackVote implements HackTask{
     private class Attacker implements Runnable {
         private int attackId;
         private int thread;
+        private int more;
 
-        public Attacker(int attackId, int thread) {
+        public Attacker(int attackId, int thread, int more) {
             this.attackId = attackId;
             this.thread = thread;
+            this.more = more;
         }
 
         @Override
@@ -199,7 +201,7 @@ public class HackVote implements HackTask{
                 int attackVote = getVote(attackId);
                 int vote = getVote(id);
                 if ( attackVote > 0 && vote > 0) {
-                    int delta = attackVote - vote;
+                    int delta = attackVote - vote + more;
                     if ( delta > 0 ){
                         //double check
                         if ( attackRun ) start(id, delta, thread, delay);
@@ -278,14 +280,16 @@ public class HackVote implements HackTask{
             if (pars.containsKey("id")
                     && pars.containsKey("attack")
                     && pars.containsKey("thread")
-                    && pars.containsKey("delay")){
+                    && pars.containsKey("delay")
+                    && pars.containsKey("more")){
                 try {
                     int id = Integer.parseInt(pars.get("id"));
                     int attack = Integer.parseInt(pars.get("attack"));
                     int thread = Integer.parseInt(pars.get("thread"));
                     int delay = Integer.parseInt(pars.get("delay"));
+                    int more = Integer.parseInt(pars.get("more"));
                     if (!attackRun) {
-                        attack(id, attack, thread, delay);
+                        attack(id, attack, thread, delay, more);
                         return NanoHTTPD.newFixedLengthResponse("true");
                     } else {
                         return NanoHTTPD.newFixedLengthResponse("false");
@@ -306,6 +310,9 @@ public class HackVote implements HackTask{
                 }
                 if(!pars.containsKey("delay")){
                     enterPage.add(EnterPage.TYPE_TEXT, "delay", "0");
+                }
+                if(!pars.containsKey("more")){
+                    enterPage.add(EnterPage.TYPE_TEXT, "more", "0");
                 }
                 return enterPage.getResponse();
             }
