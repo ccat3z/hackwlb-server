@@ -31,7 +31,8 @@ server {
     root    <%= ENV['OPENSHIFT_REPO_DIR'] %>/public;
 
     rewrite ^/blog(.*)$ http://blog.c0ldcat.ml$1 permanent;
-    
+    rewrite ^/$ http://blog.c0ldcat.ml permanent;
+
     location / {
         index  index.html index.htm;
     }
