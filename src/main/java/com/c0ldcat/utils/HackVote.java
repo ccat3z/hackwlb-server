@@ -201,7 +201,8 @@ public class HackVote implements HackTask{
                 if ( attackVote > 0 && vote > 0) {
                     int delta = attackVote - vote;
                     if ( delta > 0 ){
-                        start(id, delta, thread, delay);
+                        //double check
+                        if ( attackRun ) start(id, delta, thread, delay);
                     }
                 }
             }
