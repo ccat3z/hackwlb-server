@@ -6,17 +6,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HackVote implements Runnable, HackTask{
-    private boolean run = false;
-    private int id = 0;
-    private int attackId = 0;
-    private int time = 0;
-    private boolean state = false;
-    private int speed = 0;
-    private Thread speedTestThread;
-    private int thread;
-    private int delay;
-    private HashMap<String, HackTask> actionMap;
+public class HackVote implements HackTask{
+    private boolean run = false; //voter run controller
+    private int id = 0; //target id
+    private int time = 0; //remain vote time
+    private boolean state = false; //vote state
+    private SpeedMonitor speedMonitor; //speed monitor
+    private int delay; //vote delay
+    private HashMap<String, HackTask> actionMap; //server actions
+    private ArrayList<Thread> voteThreads; //voters
+    private Thread attackThread; //attacker
+    private boolean attackRun; //attacker run controller
+    private int vote; //vote sum
 
     final static private String ACTION_START = "start";
     final static private String ACTION_ATTACK = "attack";
@@ -28,6 +29,7 @@ public class HackVote implements Runnable, HackTask{
 
     final static private String ACTION_TIME = "time";
     final static private String ACTION_SPEED = "speed";
+    final static private String ACTION_REAL_SPEED = "real-speed";
     final static private String ACTION_THREAD = "thread";
     final static private String ACTION_DELAY = "delay";
     final static private String ACTION_RUN_STATE = "run-state";
@@ -58,13 +60,19 @@ public class HackVote implements Runnable, HackTask{
         actionMap.put(ACTION_SPEED, new HackTask() {
             @Override
             public NanoHTTPD.Response handle(TaskHelper th) {
-                return NanoHTTPD.newFixedLengthResponse("" + speed);
+                return NanoHTTPD.newFixedLengthResponse("" + (speedMonitor != null ? speedMonitor.getSpeed() : 0));
+            }
+        });
+        actionMap.put(ACTION_REAL_SPEED, new HackTask() {
+            @Override
+            public NanoHTTPD.Response handle(TaskHelper th) {
+                return NanoHTTPD.newFixedLengthResponse("" + (speedMonitor != null ? speedMonitor.getRealSpeed() : 0));
             }
         });
         actionMap.put(ACTION_THREAD, new HackTask() {
             @Override
             public NanoHTTPD.Response handle(TaskHelper th) {
-                return NanoHTTPD.newFixedLengthResponse("" + thread);
+                return NanoHTTPD.newFixedLengthResponse(Integer.toString(voteThreads.size()));
             }
         });
         actionMap.put(ACTION_DELAY, new HackTask() {
@@ -85,6 +93,10 @@ public class HackVote implements Runnable, HackTask{
                 return NanoHTTPD.newFixedLengthResponse("" + state);
             }
         });
+
+        voteThreads = new ArrayList<>();
+        speedMonitor = new SpeedMonitor();
+        speedMonitor.start();
     }
 
 
@@ -101,24 +113,6 @@ public class HackVote implements Runnable, HackTask{
         return new StateHandler().handle(th);
     }
 
-    @Override
-    public void run() {
-        Utils.log("Vote Thread Start");
-        thread++;
-        while (run & id != 0 & time != 0){
-            time--;
-            state = voteOnce(id);
-            try {
-                Thread.sleep(delay * 1000);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        run = false;
-        thread--;
-        Utils.log("Vote Thread Stop");
-    }
-
     public void start(int id, int time, int thread, int delay){
         this.id = id;
         this.time = time;
@@ -127,25 +121,24 @@ public class HackVote implements Runnable, HackTask{
         if (delay != 0) {
             thread = 1;
         }
-        if (speedTestThread == null) {
-            speedTestThread = new Thread(new SpeedTest());
-            speedTestThread.start();
-        }
-        for(int i = 0; i < thread; i++){
-            new Thread(this).start();
+        while (voteThreads.size() < thread){
+            Thread t = new Voter();
+            voteThreads.add(t);
+            t.start();
         }
     }
 
     public void attack(int id, int attackId, int thread, int delay){
-        this.attackId = attackId;
-        int delta = getVote(attackId) - getVote(id);
-        time = delta > 0 ? delta : 0;
-        start(id, time, thread, delay);
-        new Thread(new AttackModeTimeUpdater()).start();
+        this.id = id;
+        this.delay = delay;
+        this.attackRun = true;
+        attackThread = new Thread(new Attacker(attackId, thread));
+        attackThread.start();
     }
 
     public void stop(){
         this.run = false;
+        this.attackRun = false;
     }
 
     protected boolean voteOnce(int id) {
@@ -160,11 +153,24 @@ public class HackVote implements Runnable, HackTask{
         return 0;
     }
 
-    private class SpeedTest implements Runnable {
+    private class SpeedMonitor extends Thread {
+        private int speed = -1;
+        private int realSpeed = -1;
+        private boolean pause;
+
+        public int getSpeed() {
+            return speed;
+        }
+
+        public int getRealSpeed() {
+            return realSpeed;
+        }
+
         @Override
         public void run() {
-            Utils.log("Speed Test Thread Start");
-            while (run){
+            Utils.log("Speed Monitor Thread Start");
+            while (true){
+                int oldvote = vote;
                 int oldtime = time;
                 try {
                     Thread.sleep(60000);
@@ -172,31 +178,54 @@ public class HackVote implements Runnable, HackTask{
 
                 }
                 speed = oldtime - time;
+                realSpeed = vote - oldvote;
             }
-            speedTestThread = null;
-            Utils.log("Speed Test Thread Stop");
         }
     }
 
-    private class AttackModeTimeUpdater implements Runnable {
+    private class Attacker implements Runnable {
+        private int attackId;
+        private int thread;
+
+        public Attacker(int attackId, int thread) {
+            this.attackId = attackId;
+            this.thread = thread;
+        }
+
         @Override
         public void run() {
-            Utils.log("Attack Mode Time Updater Thread Start");
-            while (run){
+            Utils.log("Attack Thread Start");
+            while (attackRun){
                 int attackVote = getVote(attackId);
                 int vote = getVote(id);
                 if ( attackVote > 0 && vote > 0) {
                     int delta = attackVote - vote;
-                    time = delta > 0 ? delta : 0;
-                    try {
-                        Thread.sleep(1000);
-                    } catch (Exception e) {
-
+                    if ( delta > 0 ){
+                        start(id, delta, thread, delay);
                     }
                 }
             }
-            speedTestThread = null;
-            Utils.log("Attack Mode Time Updater Thread Stop");
+            Utils.log("Attack Thread Stop");
+        }
+    }
+
+    private class Voter extends Thread {
+        @Override
+        public void run() {
+            Utils.log("Vote Thread Start");
+            while (run & id != 0 & time > 0){
+                time--;
+                vote++;
+                state = voteOnce(id);
+                try {
+                    Thread.sleep(delay * 1000);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            run = false;
+            voteThreads.remove(this);
+            Utils.log("Vote Thread Stop");
         }
     }
 
@@ -254,7 +283,7 @@ public class HackVote implements Runnable, HackTask{
                     int attack = Integer.parseInt(pars.get("attack"));
                     int thread = Integer.parseInt(pars.get("thread"));
                     int delay = Integer.parseInt(pars.get("delay"));
-                    if (!run) {
+                    if (!attackRun) {
                         attack(id, attack, thread, delay);
                         return NanoHTTPD.newFixedLengthResponse("true");
                     } else {
