@@ -13,6 +13,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -108,7 +109,12 @@ public class HackZXB extends HackVote {
             return -1;
         } else {
             //parse json
-            JSONArray jsonArray = new JSONObject(resp).getJSONObject("data").getJSONArray("vote-item");
+            JSONArray jsonArray;
+            try {
+                jsonArray = new JSONObject(resp).getJSONObject("data").getJSONArray("vote-item");
+            } catch (JSONException e) {
+                jsonArray = null;
+            }
             if (jsonArray == null) return -1;
 
             //find target
