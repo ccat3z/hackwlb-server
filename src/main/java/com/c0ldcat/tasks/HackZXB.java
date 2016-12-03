@@ -27,7 +27,7 @@ public class HackZXB extends HackVote {
         HttpClient httpClient = HttpClients.createDefault();
         HttpPost httpPost = new HttpPost("http://a.ajmide.com/api.php?plugin=vote&action=postVoteWx&pp_id=478");
         try {
-            httpPost.setEntity(new StringEntity("v=" + id + "&c=0&o=0", ContentType.create("plain/text", Consts.UTF_8)));
+            httpPost.setEntity(new StringEntity("v=" + id + "&c=0&o=", ContentType.create("plain/text", Consts.UTF_8)));
         } catch (Exception e) {
             e.printStackTrace();
         }
