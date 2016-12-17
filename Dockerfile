@@ -2,7 +2,9 @@ FROM alpine:3.4
 
 ENV LANG C.UTF-8
 EXPOSE 80
-EXPOSE 31330 #test port
+
+#test port
+EXPOSE 31321
 
 #config repo
 RUN cat /etc/apk/repositories | sed -n "/main$/{s/^/@testing /;s/v[0-9\.]*/edge/;s/main$/testing/p}" >> /etc/apk/repositories
